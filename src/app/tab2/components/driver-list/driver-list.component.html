@@ -1,0 +1,67 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/konfiguracija">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>{{ config.description }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-grid class="driver-container">
+    <ion-row>
+      <ion-col size-md="6" offset-md="3">
+        <ng-container>
+          <ion-label class="ion-padding">Vozaci</ion-label>
+          <ion-card class="driver" *ngFor="let driver of drivers">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-label class="driver-name">{{ driver.name }}</ion-label>
+                  <div class="driver-edit">
+                    <ion-icon
+                      (click)="presentActionSheet(driver)"
+                      size="large"
+                      name="ellipsis-horizontal-sharp"
+                    ></ion-icon>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card>
+          <div class="ion-padding">
+            <ion-button [color]="'primary'" (click)="createDriver()">Dodaj Vozaca</ion-button>
+          </div>
+        </ng-container>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-md="6" offset-md="3">
+        <ng-container>
+          <ion-label class="ion-padding">Vozila</ion-label>
+          <ion-card class="driver" *ngFor="let vehicle of vehicles">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-label class="driver-name">{{ vehicle.plateNumber }}</ion-label>
+                  <div class="driver-edit">
+                    <ion-icon
+                      (click)="presentActionSheet2(vehicle)"
+                      size="large"
+                      name="ellipsis-horizontal-sharp"
+                    ></ion-icon>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card>
+          <div class="ion-padding">
+            <ion-button [color]="'primary'" (click)="createVehicle()">Dodaj Vozilo</ion-button>
+          </div>
+        </ng-container>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</ion-content>

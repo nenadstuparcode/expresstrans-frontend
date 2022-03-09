@@ -1,0 +1,77 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/konfiguracija">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>{{ config.description }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-refresher
+    (ionRefresh)="getInvoices('', 0, 10, $event)"
+    slot="fixed"
+    pullFactor="0.5"
+    pullMin="100"
+    pullMax="200"
+  >
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-grid class="invoice-container">
+    <ion-row>
+      <ion-col [formGroup]="searchInvoiceForm" size-xs="12" size-md="6" offset-md="3">
+        <ion-searchbar formControlName="searchTerm" placeholder="Pretraži"></ion-searchbar>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size-md="6" offset-md="3">
+        <div class="invoice-outline">
+          <ion-card class="invoice" *ngFor="let invoice of invoices">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-label class="invoice-item fs-20">
+                    <ion-icon size="large" name="document-text-outline"></ion-icon>
+                    {{ invoice.invoiceNumber }}
+                  </ion-label>
+
+                  <ion-label class="invoice-item ml-1">
+                    <ion-icon size="small" name="calendar-outline"></ion-icon>
+                    {{ invoice.invoiceDateStart | date: 'dd MMM' }} -
+                    {{ invoice.invoiceDateReturn | date: 'dd MMM YYYY' }}
+                  </ion-label>
+
+                  <ion-label class="invoice-item ml-1">
+                    <ion-icon size="small" name="bus-outline"></ion-icon>
+                    {{ invoice.invoiceVehicle }}
+                  </ion-label>
+
+                  <ion-label class="invoice-item ml-1">
+                    <ion-icon size="small" name="person-circle-outline"></ion-icon>
+                    <span>{{ invoice.driversArray }}</span>
+                  </ion-label>
+
+                  <div class="invoice-edit">
+                    <ion-icon
+                      (click)="presentActionSheet(invoice)"
+                      size="large"
+                      name="ellipsis-horizontal-sharp"
+                    ></ion-icon>
+                  </div>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card>
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll threshold="40px" (ionInfinite)="getMoreInvoices()">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Učitavanje rezultata...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createInvoice()">
+      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

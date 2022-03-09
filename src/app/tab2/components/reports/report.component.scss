@@ -1,0 +1,63 @@
+table {
+  width: 100%;
+}
+
+.mat-table-container {
+  overflow-x: scroll;
+}
+th.mat-header-cell, td.mat-cell, td.mat-footer-cell {
+  padding: 5px 10px;
+  font-size: 10px;
+}
+
+.ticket-avatar {
+  width: 20px;
+  height: 20px;
+}
+
+.total-footer {
+  font-size: 16px;
+  font-weight: bold;
+}
+.mat-row:nth-child(odd){
+  background-color: #f9f9f9;
+}
+
+.mat-row {
+  cursor: pointer;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.header-align-right{
+  font-weight: bold;
+  display: flex;
+  padding: 21px 0;
+  justify-content: flex-end;
+}
+::ng-deep .mat-checkbox-checked .mat-checkbox-background {
+  background: #c44e4e !important;
+}
+
+::ng-deep .mat-checkbox-checked:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element, .mat-checkbox:active:not(.mat-checkbox-disabled).mat-accent .mat-ripple-element {
+  background: #c44e4e !important;
+}
+.ticket-type-icon {
+  font-size: 20px;
+  margin-right: 7.5px;
+}
+
+.highlight{
+  border: 3px solid #555;
+  border-top: 2.5px solid #555;
+  //background: #42A948; /* green */
+}
+
+mat-checkbox {
+  & label {
+    margin-bottom: 0 !important;
+  }
+}
+

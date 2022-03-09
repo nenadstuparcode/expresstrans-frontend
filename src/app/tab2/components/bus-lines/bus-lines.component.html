@@ -1,0 +1,103 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/konfiguracija">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>{{ tech.description }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-refresher
+    (ionRefresh)="getBusLines(searchTermValue, 10, 0, $event)"
+    slot="fixed"
+    pullFactor="0.5"
+    pullMin="100"
+    pullMax="200"
+  >
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-grid class="bus-line-container">
+    <ion-row>
+      <ion-col [formGroup]="searchBarForm" size-xs="12" size-md="6" offset-md="3">
+        <ion-searchbar
+          formControlName="searchTerm"
+          placeholder="Pretraži"
+          (ionClear)="getBusLines('', 10, 0)"
+        ></ion-searchbar>
+      </ion-col>
+      <ion-col size-md="6" offset-md="3">
+        <ng-container *ngIf="busLines.length">
+          <ion-card class="bus-line" *ngFor="let line of busLines">
+            <ion-grid>
+              <ion-row>
+                <ion-col size="12">
+                  <!-- BUS LINE DETAILS -->
+                  <ion-label class="bus-line-title">
+                    <div class="bus-line-title-item">
+                      <p>{{ line.lineCityStart }}</p>
+                      <small>{{ line.lineCountryStart === 'bih' ? 'BIH' : 'DE' }}</small>
+                      <ion-avatar class="bus-line-country">
+                        <img [src]="line.lineCountryStart === 'bih' ? bihImage : deImage" />
+                      </ion-avatar>
+                    </div>
+                    <div class="divider-container">
+                      <div class="lines">
+                        <ion-icon class="middle-icon" size="large" name="arrow-forward-circle-sharp"></ion-icon>
+                      </div>
+                    </div>
+                    <div class="bus-line-title-item">
+                      <p>{{ line.lineCityEnd }}</p>
+                      <small>{{ line.lineCountryStart !== 'bih' ? 'BIH' : 'DE' }}</small>
+                      <ion-avatar class="bus-line-country">
+                        <img [src]="line.lineCountryStart !== 'bih' ? bihImage : deImage" />
+                      </ion-avatar>
+                    </div>
+                  </ion-label>
+
+                  <!-- BUS LINE START DAYS -->
+                  <div class="bus-line-days">
+                    <ion-badge *ngFor="let start of line.lineArray" size="large"
+                      >{{ availableDays[start.day].text }} ({{ start.time | date: 'HH:mm' }})</ion-badge
+                    >
+                  </div>
+
+                  <!-- BUS LINE PRICES -->
+                  <div class="bus-line-price-container">
+                    <ion-label class="bus-line-price"
+                      >Jedan smjer:<span class="bus-line-price-amount">{{
+                        line.linePriceOneWay | currency
+                      }}</span></ion-label
+                    >
+                    <span>|</span>
+                    <ion-label class="bus-line-price"
+                      >Povratna:<span class="bus-line-price-amount">{{
+                        line.linePriceRoundTrip | currency
+                      }}</span></ion-label
+                    >
+                  </div>
+
+                  <!-- BUS LINE EDIT TRIGGER -->
+                  <ion-icon
+                    class="bus-line-edit"
+                    (click)="presentActionSheet(line._id)"
+                    size="large"
+                    name="ellipsis-horizontal-sharp"
+                  ></ion-icon>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-card>
+        </ng-container>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-infinite-scroll threshold="40px" (ionInfinite)="getMoreBusLines()">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Učitavanje rezultata...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="openCreateBuslineModal()">
+      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

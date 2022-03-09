@@ -1,0 +1,112 @@
+<ion-content>
+  <ion-refresher (ionRefresh)="getTickets('', 10, 0, $event)" slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <ion-grid class="ticket-list">
+    <ion-row>
+      <ion-col [formGroup]="searchBarForm" size-xs="12" size-md="6" offset-md="3">
+        <ion-searchbar formControlName="searchTerm" placeholder="Pretraži"></ion-searchbar>
+      </ion-col>
+
+      <ion-col size-md="6" offset-md="3" *ngIf="tickets?.length">
+        <ion-card *ngFor="let ticket of tickets" class="ticket">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="12">
+                <div class="ticket-type-icon">
+                  <ion-icon
+                    size="large"
+                    [name]="ticket.ticketType === TicketTypes.classic || ticket.ticketType === TicketTypes.return ? 'cash-outline' : 'globe-outline'"
+                  ></ion-icon>
+                </div>
+
+                <ion-icon
+                  *ngIf="ticket.ticketType !== TicketTypes.return; else returnTicketIcon"
+                  class="ticket-trip-type-icon"
+                  size="large"
+                  [color]="ticket.ticketRoundTrip ? 'primary' : 'secondary'"
+                  [name]="ticket.ticketRoundTrip ? 'repeat-outline' : 'return-up-forward-outline'"
+                ></ion-icon>
+
+                <ng-template #returnTicketIcon>
+                  <ion-icon
+                    class="ticket-trip-type-icon"
+                    size="large"
+                    color="danger"
+                    name="return-up-back-outline"
+                  ></ion-icon>
+                </ng-template>
+
+                <ion-icon class="ticket-icon" size="large" color="primary" name="ticket-sharp"></ion-icon>
+                <ion-label class="ticket-item"
+                  ><ion-icon name="person-sharp"></ion-icon> {{ticket.ticketOnName}}</ion-label
+                >
+                <ion-label class="bus-line-title">
+                  <div class="bus-line-title-item">
+                    <p>{{ ticket.busLineData.lineCityStart }}</p>
+                    <small>{{ ticket.busLineData.lineCountryStart === 'bih' ? 'BIH' : 'DE'}}</small>
+                    <ion-avatar class="bus-line-country">
+                      <img [src]=" ticket.busLineData.lineCountryStart === 'bih' ? bihImage : deImage" />
+                    </ion-avatar>
+                  </div>
+                  <div class="divider-container">
+                    <div class="lines">
+                      <ion-icon class="middle-icon" size="large" name="arrow-forward-circle-sharp"></ion-icon>
+                    </div>
+                  </div>
+                  <div class="bus-line-title-item">
+                    <p>{{ ticket.busLineData.lineCityEnd }}</p>
+                    <small>{{ ticket.busLineData.lineCountryStart !== 'bih' ? 'BIH' : 'DE'}}</small>
+                    <ion-avatar class="bus-line-country">
+                      <img [src]="ticket.busLineData.lineCountryStart !== 'bih' ? bihImage : deImage" />
+                    </ion-avatar>
+                  </div>
+                </ion-label>
+
+                <ion-label class="ticket-payed"
+                  >Br. Karte: {{ticket.ticketType === TicketTypes.internet ? ticket?.ticketId :
+                  ticket?.ticketClassicId}} | Br. Fakture {{ticket.ticketInvoiceNumber}}
+                </ion-label>
+
+                <ion-label class="ticket-price" *ngIf="ticket.ticketType !== TicketTypes.return; else returnTicket">
+                  {{ticket.ticketPrice | currency}}
+                </ion-label>
+
+                <ng-template #returnTicket>
+                  <ion-label class="ticket-price bold"> Korištenje povratne: {{0 | currency}} </ion-label>
+                </ng-template>
+
+                <div class="ticket-date">
+                  <ion-label>
+                    {{ticket.ticketStartDate | date: "dd MMM YY" }} ({{ ticket.ticketStartTime | date: "HH:mm"
+                    }})</ion-label
+                  >
+                </div>
+
+                <div class="ticket-edit">
+                  <ion-icon
+                    (click)="presentActionSheet(ticket)"
+                    size="large"
+                    name="ellipsis-horizontal-sharp"
+                  ></ion-icon>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-card>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- Floating Icon -->
+  <ion-infinite-scroll threshold="40px" (ionInfinite)="getMoreTickets()">
+    <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Učitavanje rezultata...">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createTicket()">
+      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

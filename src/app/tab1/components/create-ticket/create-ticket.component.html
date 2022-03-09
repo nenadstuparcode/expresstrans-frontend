@@ -1,0 +1,106 @@
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-title>Kreiraj Kartu</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal('dismiss')">Odustani</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ng-template #loading>
+    <div class="loading-container">
+      <ion-spinner color="primary" name="crescent"></ion-spinner>
+    </div>
+  </ng-template>
+  <ng-container *ngIf="createTicketForm; else loading">
+    <ion-list class="ion-no-margin" [formGroup]="createTicketForm">
+
+      <ion-segment color="primary" formControlName="ticketType">
+        <ion-segment-button color="primary" value="classic">
+          <ion-label>Klasična</ion-label>
+        </ion-segment-button>
+        <ion-segment-button color="primary" value="internet">
+          <ion-label>Internet</ion-label>
+        </ion-segment-button>
+        <ion-segment-button color="primary" value="return">
+          <ion-label>Povratna</ion-label>
+        </ion-segment-button>
+      </ion-segment>
+
+      <ion-item *ngIf="createTicketType === TicketTypes.classic || createTicketType === TicketTypes.return">
+        <ion-label position="stacked">Broj Kl. Karte</ion-label>
+        <ion-input formControlName="ticketClassicId" placeholder="Broj kl. karte" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Br. Fakture</ion-label>
+        <ion-select formControlName="ticketInvoiceNumber" okText="Potvrdi" cancelText="Odustani">
+          <ion-select-option *ngFor="let invoice of invoices" [value]="invoice.invoiceNumber">
+            {{invoice.invoiceNumber}} / {{invoice.invoiceDateStart | date: "dd MMM YY"}} - {{invoice.invoiceDateReturn | date: "dd MMM YY"}}
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Ime Putnika</ion-label>
+        <ion-input formControlName="ticketOnName" placeholder="Ime Prezime" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Broj Telefona</ion-label>
+        <ion-input formControlName="ticketPhone" placeholder="+38765111333" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input formControlName="ticketEmail" placeholder="vaš email" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Napomena</ion-label>
+        <ion-textarea formControlName="ticketNote" placeholder="Unesite Napomenu"></ion-textarea>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Karta Validna</ion-label>
+        <ion-input formControlName="ticketValid" type="number"></ion-input>
+      </ion-item>
+
+      <mat-form-field class="example-full-width" appearance="fill">
+        <mat-label>Linija</mat-label>
+        <input type="text"
+               placeholder="Izaberi liniju"
+               matInput
+               formControlName="ticketBusLineId"
+               [matAutocomplete]="auto">
+        <mat-autocomplete [displayWith]="displayFn" autoActiveFirstOption #auto="matAutocomplete">
+          <mat-option *ngFor="let busline of filteredBuslines | async"  [value]="busline._id">
+            {{busline.lineCityStart}} - {{busline.lineCityEnd}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <ion-item class="ion-no-padding" *ngIf="createTicketType !== TicketTypes.return">
+        <ion-label class="pl-3">Povratna</ion-label>
+        <ion-toggle formControlName="ticketRoundTrip"></ion-toggle>
+      </ion-item>
+
+      <ion-item>
+        <ion-input readonly="true" placeholder="Unesi Datum" [value]="createTicketForm.controls.ticketStartDate.value | date: 'dd/MM/YY'"></ion-input>
+        <ion-button slot="end" (click)="openDateModal('date')">Datum</ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-input readonly="true" placeholder="Unesi Vrijeme" [value]="createTicketForm.controls.ticketStartTime.value | date: 'HH:mm'"></ion-input>
+        <ion-button slot="end" (click)="openDateModal('time')">Vrijeme</ion-button>
+      </ion-item>
+
+    </ion-list>
+
+    <ion-button [disabled]="!createTicketForm.valid" (click)="createTicket()" class="submit-ticket ion-no-margin" size="large" expand="full" color="primary">Kreiraj
+      <ion-icon name="checkmark-outline" size="large"></ion-icon>
+    </ion-button>
+  </ng-container>
+
+</ion-content>
+

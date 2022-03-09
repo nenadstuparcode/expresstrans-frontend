@@ -1,0 +1,9 @@
+<ion-app>
+  <ion-toolbar color="primary" class="app-header">
+    <ion-img class="app-logo" [src]="logoUrl"></ion-img>
+  </ion-toolbar>
+
+  <ion-content class="app-content" [@fadeAnimation]="o.isActivated ? o.activatedRoute : ''">
+    <ion-router-outlet #o="outlet"></ion-router-outlet>
+  </ion-content>
+</ion-app>

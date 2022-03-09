@@ -1,0 +1,24 @@
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-title>Posalji na email</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">Odustani</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ng-container *ngIf="sendEmailForm">
+    <ion-list [formGroup]="sendEmailForm">
+      <ion-item>
+        <ion-label position="stacked">Email</ion-label>
+        <ion-input formControlName="email" placeholder="vaš email" type="email"></ion-input>
+      </ion-item>
+    </ion-list>
+
+    <ion-button [disabled]="!sendEmailForm.valid" (click)="emailTicketCustom(ticketData)" class="submit-ticket" size="large" expand="full" color="primary">Pošalji
+      <ion-icon name="checkmark-outline" size="large"></ion-icon>
+    </ion-button>
+  </ng-container>
+
+</ion-content>
+

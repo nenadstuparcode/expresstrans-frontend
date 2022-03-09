@@ -1,0 +1,18 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-title>Konfiguracija</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-row>
+    <ion-col size-md="6" offset-md="3">
+      <ion-list>
+        <ion-item *ngFor="let config of configs" (click)="showDetail(config.title)">
+          <ion-icon slot="start" [name]="config.icon"></ion-icon>
+          <ion-label>{{ config.description }}</ion-label>
+          <ion-icon slot="end" name="arrow-forward-sharp"></ion-icon>
+        </ion-item>
+      </ion-list>
+    </ion-col>
+  </ion-row>
+</ion-content>

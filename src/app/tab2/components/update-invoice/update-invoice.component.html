@@ -1,0 +1,98 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>Ažuriraj Fakturu</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen class="ion-padding">
+  <ng-container *ngIf="updateInvoiceForm">
+    <form [formGroup]="updateInvoiceForm">
+      <ion-list>
+        <ion-item button="true" id="create-invoice-date-input-start">
+          <ion-label>Datum Polaska</ion-label>
+          <ion-text slot="end" *ngIf="updateInvoiceForm.controls.invoiceDateStart.value">{{
+            updateInvoiceForm.controls.invoiceDateStart.value | date: 'dd/MM/YYYY'
+          }}</ion-text>
+          <ion-popover trigger="create-invoice-date-input-start" show-backdrop="false">
+            <ng-template>
+              <ion-datetime
+                #popoverDateStart
+                presentation="date"
+                (ionChange)="setDateStart(popoverDateStart.value)"
+              ></ion-datetime>
+            </ng-template>
+          </ion-popover>
+        </ion-item>
+
+        <ion-item button="true" id="create-invoice-date-input-return">
+          <ion-label>Datum Povratka</ion-label>
+          <ion-text slot="end" *ngIf="updateInvoiceForm.controls.invoiceDateReturn.value">{{
+            updateInvoiceForm.controls.invoiceDateReturn.value | date: 'dd/MM/YYYY'
+          }}</ion-text>
+          <ion-popover trigger="create-invoice-date-input-return" show-backdrop="false">
+            <ng-template>
+              <ion-datetime
+                #popoverDateReturn
+                presentation="date"
+                (ionChange)="setDateReturn(popoverDateReturn.value)"
+              ></ion-datetime>
+            </ng-template>
+          </ion-popover>
+        </ion-item>
+
+        <ion-item>
+          <ion-label>Tablice</ion-label>
+          <ion-select
+            formControlName="invoiceVehicle"
+            okText="Potvrdi"
+            cancelText="Odustani"
+            placeholder="Izaberi tablice"
+          >
+            <ion-select-option *ngFor="let plateNum of availableVehicles" [value]="plateNum.plateNumber">{{
+              plateNum.plateNumber
+            }}</ion-select-option>
+          </ion-select>
+        </ion-item>
+        <ng-container [formGroup]="driverForm">
+          <ion-list-header>Dodaj Vozače</ion-list-header>
+          <ion-item lines="none">
+            <ion-label position="stacked">Vozaci </ion-label>
+            <ion-select formControlName="name" okText="Potvrdi" cancelText="Odustani" placeholder="Izaberi vozaca">
+              <ng-container *ngFor="let driver of availableDrivers">
+                <ion-select-option *ngIf="!isDriverUsed(driver.name)" [value]="driver.name">
+                  {{ driver.name }}</ion-select-option
+                >
+              </ng-container>
+            </ion-select>
+          </ion-item>
+
+          <ion-item lines="none">
+            <ion-button [disabled]="!driverForm.valid" slot="end" size="medium" color="primary" (click)="addDriver()">
+              <ion-icon color="light" name="add-outline"></ion-icon>
+              Dodaj Vozaca
+            </ion-button>
+          </ion-item>
+
+          <ion-list-header>Izabrani Vozači</ion-list-header>
+          <ion-item lines="none" *ngFor="let driver of drivers.value; index as index">
+            <ion-label>{{ driver.name }}</ion-label>
+            <ion-icon (click)="removeDriver(index)" color="primary" slot="end" name="close"></ion-icon>
+          </ion-item>
+        </ng-container>
+      </ion-list>
+    </form>
+
+    <ion-button
+      [disabled]="!updateInvoiceForm.valid"
+      (click)="updateInvoice()"
+      class="submit-ticket"
+      size="large"
+      expand="full"
+      color="primary"
+      >Ažuriraj
+      <ion-icon name="checkmark-outline" size="large"></ion-icon>
+    </ion-button>
+  </ng-container>
+</ion-content>

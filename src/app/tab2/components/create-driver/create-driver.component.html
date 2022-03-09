@@ -1,0 +1,35 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>Kreiraj Vozaca</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen class="ion-padding">
+  <form [formGroup]="createDriverForm">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Ime Vozaca</ion-label>
+        <ion-input formControlName="name" placeholder="Unesite Ime" type="text"></ion-input>
+        <ion-text
+          color="danger"
+          *ngIf="!createDriverForm.controls.name.valid && createDriverForm.controls.name.dirty"
+          class="invalid-field"
+        >
+          Polje Ime Vozaca polaska je obavezno.
+        </ion-text>
+      </ion-item>
+    </ion-list>
+  </form>
+  <ion-button
+    [disabled]="!createDriverForm.valid"
+    (click)="createDriver()"
+    class="submit-ticket"
+    size="large"
+    expand="full"
+    color="primary"
+    >Kreiraj
+    <ion-icon name="checkmark-outline" size="large"></ion-icon>
+  </ion-button>
+</ion-content>

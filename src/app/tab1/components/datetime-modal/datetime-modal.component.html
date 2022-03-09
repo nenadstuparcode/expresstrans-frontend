@@ -1,0 +1,13 @@
+<ion-datetime
+  #popoverDate
+  [value]="myToday"
+  [minuteValues]="data === 'time' ? '0,5,10,15,20,25,30,35,40,45,50,55' : null"
+  [presentation]="data === 'time' ? 'time' : 'date'"
+  (ionChange)="setDate(popoverDate.value)"
+>
+</ion-datetime>
+
+<ion-buttons slot="buttons">
+  <ion-button size="small" color="primary" (click)="confirmDate(popoverDate.value)">Potvrdi</ion-button>
+  <ion-button size="small" color="secondary" (click)="onNoClick()">Odustani</ion-button>
+</ion-buttons>

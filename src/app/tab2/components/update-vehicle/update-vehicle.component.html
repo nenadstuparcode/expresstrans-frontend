@@ -1,0 +1,35 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="dismissModal()">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>Uredi Vozilo</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen class="ion-padding">
+  <form [formGroup]="updateVehicleForm">
+    <ion-list>
+      <ion-item>
+        <ion-label position="stacked">Broj Tablica</ion-label>
+        <ion-input formControlName="plateNumber" placeholder="Unesite tablice" type="text"></ion-input>
+        <ion-text
+          color="danger"
+          *ngIf="!updateVehicleForm.controls.plateNumber.valid && updateVehicleForm.controls.plateNumber.dirty"
+          class="invalid-field"
+        >
+          Polje Broj Tablica polaska je obavezno.
+        </ion-text>
+      </ion-item>
+    </ion-list>
+  </form>
+  <ion-button
+    [disabled]="!updateVehicleForm.valid"
+    (click)="updateDriver()"
+    class="submit-ticket"
+    size="large"
+    expand="full"
+    color="primary"
+    >Sačuvaj promjene
+    <ion-icon name="checkmark-outline" size="large"></ion-icon>
+  </ion-button>
+</ion-content>

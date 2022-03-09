@@ -1,0 +1,17 @@
+.driver {
+  &-container {
+    background: #e8e8e8;
+    min-height: 100vh;
+  }
+  &-edit {
+    position: absolute;
+    right: 7.5px;
+    top: 0px;
+    cursor: pointer;
+  }
+}
+.add-icon {
+  position: fixed;
+  bottom:20px;
+  right: 30px;
+}
