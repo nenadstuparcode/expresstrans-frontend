@@ -4,10 +4,10 @@ import {ICommonResponse, IResponse, IUser, IUserLoginResponse, IUserRegister} fr
 import {Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
 import {filter, finalize, map, tap} from 'rxjs/operators';
-import {environment} from "@env/environment";
+import {environment} from '@env/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserServiceService {
 
@@ -21,7 +21,8 @@ export class UserServiceService {
   ) {
     this.userSubject = new BehaviorSubject<IUser>(JSON.parse(localStorage.getItem('user')));
     this.user = this.userSubject.asObservable();
-    if(!!JSON.parse(localStorage.getItem('user'))) {
+
+    if(JSON.parse(localStorage.getItem('user'))) {
       this.isLoggedIn$.next(true);
     }
   }
@@ -36,12 +37,13 @@ export class UserServiceService {
       map((data: ICommonResponse<IUser>) => {
         this.userSubject.next(data.data);
         localStorage.setItem('user', JSON.stringify(data.data));
+
         return data;
       }),
       finalize(() => {
         this.isLoggedIn$.next(true);
         this.router.navigate(['/'])
-      })
+      }),
     );
   }
 
@@ -55,12 +57,12 @@ export class UserServiceService {
 
   public register(user: IUserRegister): Observable<IUser> {
     return this.http.post(`${environment.apiUrl}/auth/register`,
-      { firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email}).pipe(
-        filter((data: ICommonResponse<IUser>) => !!data),
-        map((data: ICommonResponse<IUser>) => data.data),
-        finalize(() => {
-          this.router.navigate(['/otp']);
-        })
+                          { firstName: user.firstName, lastName: user.lastName, password: user.password, email: user.email}).pipe(
+      filter((data: ICommonResponse<IUser>) => !!data),
+      map((data: ICommonResponse<IUser>) => data.data),
+      finalize(() => {
+        this.router.navigate(['/otp']);
+      }),
     );
   }
 
