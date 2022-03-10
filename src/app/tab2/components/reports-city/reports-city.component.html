@@ -35,7 +35,7 @@
           <ng-container *ngIf="option.data?.length">
             <ion-label class="option-headline">{{ option.name }}</ion-label>
             <div class="mat-elevation-z8 table-container" *ngIf="option.data">
-              <table mat-table [dataSource]="option.data" matSort (matSortChange)="sortData($event)">
+              <table mat-table [dataSource]="option.data" matSort>
                 <!-- Checkbox Column -->
                 <ng-container matColumnDef="select">
                   <th mat-header-cell *matHeaderCellDef></th>
