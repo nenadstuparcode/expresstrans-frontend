@@ -21,6 +21,14 @@ export interface ILineOptions {
 export interface ITableData {
   name: string;
   data: ITicket[];
+  priceTotal: number;
+  bihTotal: number;
+  deTotal: number;
+  tranzitTotal: number;
+  kmTotal: number;
+  taxCalculatedOne: number;
+  taxCalculatedTwo: number;
+  taxDeTotal: number;
 }
 
 @Component({
@@ -115,6 +123,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.initializeRangePicker();
     this.getTickets('', 0, 2000);
+    console.log('ng on init');
   }
 
   public selectCheckbox(row: ITicket): void {
@@ -178,7 +187,10 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
               taxInDE: +this.taxInDE(ticket.ticketBusLineId).toFixed(2),
               taxCalculatedOne: ticket.ticketType === 'return' ? 0 : +this.taxCalculatedOne(ticket).toFixed(2),
               taxCalculatedTwo: ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
-              returnTaxDE: ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
+              returnTaxDE:
+                ticket.ticketType === 'return'
+                  ? 0
+                  : +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
             }));
           }),
           tap((data: ITicket[]) => {
@@ -187,6 +199,14 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
             this.lineOptions.forEach((option: ILineOptions) => {
               this.generalData.push({
                 name: option.lineName,
+                priceTotal: this.calculateTotalPrice(this.getLineTickets(option)),
+                bihTotal: this.calculateTotalBih(this.getLineTickets(option)),
+                deTotal: this.calculateTotalDe(this.getLineTickets(option)),
+                tranzitTotal: this.calculateTotalTranzit(this.getLineTickets(option)),
+                kmTotal: this.calculateTotalKilometers(this.getLineTickets(option)),
+                taxCalculatedOne: this.calculateTotalTaxOne(this.getLineTickets(option)),
+                taxCalculatedTwo: this.calculateTotalTaxTwo(this.getLineTickets(option)),
+                taxDeTotal: this.calculateTotalTax(this.getLineTickets(option)),
                 data: this.tickets
                   .filter(
                     (ticket: ITicket) =>
@@ -201,6 +221,9 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
                   })),
               });
             });
+
+            console.log(this.generalData);
+
             this.dataSource = new MatTableDataSource([...this.tickets]);
             this.dataSource.sort = this.sort;
 
@@ -222,6 +245,15 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
         )
         .subscribe();
     });
+  }
+
+  public getLineTickets(option: ILineOptions): ITicket[] {
+    return this.tickets.filter(
+      (ticket: ITicket) =>
+        (ticket.busLineData.lineCityStart === option.lineCity1 &&
+          ticket.busLineData.lineCityEnd === option.lineCity2) ||
+        (ticket.busLineData.lineCityStart === option.lineCity2 && ticket.busLineData.lineCityEnd === option.lineCity1),
+    );
   }
 
   public async presentLoading(msg: string): Promise<void> {
