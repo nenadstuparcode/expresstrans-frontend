@@ -6,11 +6,15 @@ import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { MatTableDataSource } from '@angular/material/table';
 import { BehaviorSubject, Subject, throwError } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, Platform } from '@ionic/angular';
 import { ReportService } from '@app/tab2/components/reports/report.service';
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { MatSort } from '@angular/material/sort';
 import { SelectionModel } from '@angular/cdk/collections';
+import { File } from '@ionic-native/file';
+import { FileOpener } from '@ionic-native/file-opener';
+import { saveAs } from 'file-saver';
+import {DatePipe} from "@angular/common";
 
 export interface ILineOptions {
   lineName: string;
@@ -103,6 +107,8 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
     public reportService: ReportService,
     public busLineService: BusLineService,
     public fb: FormBuilder,
+    public platform: Platform,
+    public datePipe: DatePipe,
   ) {}
 
   public get TicketTypes(): typeof TicketType {
@@ -123,7 +129,6 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.initializeRangePicker();
     this.getTickets('', 0, 2000);
-    console.log('ng on init');
   }
 
   public selectCheckbox(row: ITicket): void {
@@ -180,7 +185,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
             return data.data.map((ticket: ITicket, index: number) => ({
               ...ticket,
               position: index + 1,
-              ticketIdToShow: ticket.ticketType === 'classic' ? ticket.ticketClassicId : ticket.ticketId,
+              ticketIdToShow: ticket.ticketType === 'classic' ? `No.0${ticket.ticketClassicId}`: ticket.ticketId,
               ticketPrice: ticket.ticketType === 'return' ? 0 : ticket.ticketPrice,
               busLineData: this.getBusLineData(ticket.ticketBusLineId),
               totalKilometers: this.getTotalKilometers(ticket.ticketBusLineId),
@@ -188,9 +193,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
               taxCalculatedOne: ticket.ticketType === 'return' ? 0 : +this.taxCalculatedOne(ticket).toFixed(2),
               taxCalculatedTwo: ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
               returnTaxDE:
-                ticket.ticketType === 'return'
-                  ? 0
-                  : +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
+                ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
             }));
           }),
           tap((data: ITicket[]) => {
@@ -217,6 +220,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
                   )
                   .map((tick: ITicket, index: number) => ({
                     ...tick,
+                    ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
                     position: index + 1,
                   })),
               });
@@ -245,6 +249,54 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
         )
         .subscribe();
     });
+  }
+
+  public printReport(): void {
+    this.reportService
+      .printReport(this.generalData, 'MART')
+      .pipe(
+        take(1),
+        tap((response: ArrayBuffer) => {
+          if (this.platform.is('android') || this.platform.is('iphone')) {
+            try {
+              File.writeFile(
+                File.documentsDirectory,
+                'izvjestaj.pdf',
+                new Blob([response], { type: 'application/pdf' }),
+                {
+                  replace: true,
+                },
+              ).catch((error: Error) => throwError(error));
+
+              File.writeFile(
+                File.externalRootDirectory + '/Download',
+                'izvjestaj.pdf',
+                new Blob([response], { type: 'application/pdf' }),
+                {
+                  replace: true,
+                },
+              ).catch((error: Error) => throwError(error));
+            } catch (err) {
+              throwError(err);
+            }
+          } else {
+            const file: Blob = new Blob([response], { type: 'application/pdf' });
+            const fileURL: string = URL.createObjectURL(file);
+            window.open(fileURL);
+            saveAs(file, 'izvjestaj.pdf');
+          }
+        }),
+        tap(() => {
+          this.loadingController.dismiss();
+          FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj.pdf', 'application/pdf');
+        }),
+        catchError((error: Error) => {
+          this.loadingController.dismiss();
+
+          return throwError(error);
+        }),
+      )
+      .subscribe();
   }
 
   public getLineTickets(option: ILineOptions): ITicket[] {

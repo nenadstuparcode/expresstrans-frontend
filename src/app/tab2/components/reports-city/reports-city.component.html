@@ -327,7 +327,7 @@
       <ion-label><span class="bold">Total:</span> {{ this.calculateTotalPrice(tickets) | currency }}</ion-label>
     </div>
     <div slot="end">
-      <ion-button class="pr-2" color="primary">
+      <ion-button (click)="printReport()" class="pr-2" color="primary">
         Printaj (PDF)
         <ion-icon slot="start" name="trash"></ion-icon>
       </ion-button>

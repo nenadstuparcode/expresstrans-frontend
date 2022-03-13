@@ -20,9 +20,6 @@ import { ICommonResponse } from '@app/services/user.interface';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { ReportService } from '@app/tab2/components/reports/report.service';
-import { File } from '@ionic-native/file';
-import { FileOpener } from '@ionic-native/file-opener';
-import { saveAs } from 'file-saver';
 import { DatePipe } from '@angular/common';
 
 @Component({
@@ -272,82 +269,6 @@ export class ReportComponent implements OnInit, OnDestroy {
     this.activeSortOption = event.direction === 'asc' ? 1 : -1;
     this.activeSortProperty = event.active;
     this.getTickets('', this.pageNumber, this.resultsPerPage);
-  }
-
-  public printReport(): void {
-    const ticketsToPrint: ITicket[] = this.tickets
-      .filter((ticket: ITicket) => !this.selected.includes(ticket._id))
-      .map((tick: ITicket) => {
-        return {
-          ...tick,
-          ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
-        };
-      });
-
-    const columnsToDisplay: string[] = [
-      'Broj Fakture',
-      'Datum',
-      'Smijer',
-      'Ime i Prezime',
-      'Linija',
-      'Cijena',
-      'Vrsta Karte',
-      'Broj Karte',
-      'BiH',
-      'Tranzit',
-      'DE',
-      'Ukupno',
-      '% DE',
-      'Ukupno',
-      'Osnovica DE',
-      'Ukupno DE',
-    ];
-
-    this.reportService
-      .printReport(ticketsToPrint, columnsToDisplay)
-      .pipe(
-        take(1),
-        tap((response: ArrayBuffer) => {
-          if (this.platform.is('android') || this.platform.is('iphone')) {
-            try {
-              File.writeFile(
-                File.documentsDirectory,
-                'izvjestaj.pdf',
-                new Blob([response], { type: 'application/pdf' }),
-                {
-                  replace: true,
-                },
-              ).catch((error: Error) => throwError(error));
-
-              File.writeFile(
-                File.externalRootDirectory + '/Download',
-                'izvjestaj.pdf',
-                new Blob([response], { type: 'application/pdf' }),
-                {
-                  replace: true,
-                },
-              ).catch((error: Error) => throwError(error));
-            } catch (err) {
-              throwError(err);
-            }
-          } else {
-            const file: Blob = new Blob([response], { type: 'application/pdf' });
-            const fileURL: string = URL.createObjectURL(file);
-            window.open(fileURL);
-            saveAs(file, 'izvjestaj.pdf');
-          }
-        }),
-        tap(() => {
-          this.loadingController.dismiss();
-          FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj.pdf', 'application/pdf');
-        }),
-        catchError((error: Error) => {
-          this.loadingController.dismiss();
-
-          return throwError(error);
-        }),
-      )
-      .subscribe();
   }
 
   public ngOnDestroy(): void {

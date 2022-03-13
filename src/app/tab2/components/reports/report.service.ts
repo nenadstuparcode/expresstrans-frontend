@@ -6,6 +6,7 @@ import { ICommonResponse } from '@app/services/user.interface';
 import { filter, map } from 'rxjs/operators';
 import { ITicket } from '@app/tab1/ticket.interface';
 import { environment } from '@env/environment';
+import {ITableData} from '@app/tab2/components/reports-city/reports-city.component';
 
 @Injectable({
   providedIn: 'root',
@@ -28,13 +29,12 @@ export class ReportService {
   }
 
   //'responseType'  : 'blob' as 'json'        //This also worked
-  public printReport(tickets: ITicket[], columns: string[]): Observable<ArrayBuffer> {
+  public printReport(generalData: ITableData[], month: string): Observable<ArrayBuffer> {
     const httpOptions: any = {
       responseType: 'arraybuffer' as 'json',
-
     };
 
-    return this.http.post(`${environment.apiUrl}/ticket/report-print`, { tickets, columns }, httpOptions).pipe(
+    return this.http.post(`${environment.apiUrl}/ticket/report-print`, { generalData, month }, httpOptions).pipe(
       filter((data: any) => !!data),
       map((data: ArrayBuffer) => data),
     );
