@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { TabsPage } from './tabs.page';
 import { AuthGuard } from '@app/services/auth-guard';
-import { InvoiceListComponent } from '@app/tab2/components/inivoice-list/invoice-list.component';
 
 const routes: Routes = [
   {
@@ -23,8 +22,9 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
       {
-        path: 'fakture',
-        component: InvoiceListComponent,
+        path: 'rezervacije',
+        // eslint-disable-next-line @typescript-eslint/typedef
+        loadChildren: () => import('../tab4/tab4.module').then((m) => m.Tab4Module),
         canActivate: [AuthGuard],
       },
       {

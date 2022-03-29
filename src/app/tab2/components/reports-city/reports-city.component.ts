@@ -14,7 +14,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 import { File } from '@ionic-native/file';
 import { FileOpener } from '@ionic-native/file-opener';
 import { saveAs } from 'file-saver';
-import {DatePipe} from "@angular/common";
+import { DatePipe } from '@angular/common';
 
 export interface ILineOptions {
   lineName: string;
@@ -33,6 +33,37 @@ export interface ITableData {
   taxCalculatedOne: number;
   taxCalculatedTwo: number;
   taxDeTotal: number;
+}
+
+export interface IGeneral {
+  name: string;
+  data: ITableData[];
+  priceTotal?: number;
+  bihTotal?: number;
+  deTotal?: number;
+  tranzitTotal?: number;
+  kmTotal?: number;
+  taxCalculatedOne?: number;
+  taxCalculatedTwo?: number;
+  taxDeTotal?: number;
+  totalPassengers?: number;
+}
+
+export interface ITotals {
+  totalPassengers: number;
+  totalPrice: number;
+  totalKmBih: number;
+  totalKmTranzit: number;
+  totalKmDe: number;
+  totalKm: number;
+  totalTaxDe: string;
+  totalTaxCalculatedOne: number;
+  totalTaxCalculatedTwo: number;
+  totalTaxReturn: number;
+}
+
+export interface IFinals {
+  calc1: number;
 }
 
 @Component({
@@ -78,6 +109,21 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
     'taxReturn',
   ];
 
+  public monthNames: string[] = [
+    'Januar',
+    'Februar',
+    'Mart',
+    'April',
+    'Maj',
+    'Jun',
+    'Jul',
+    'August',
+    'Septembar',
+    'Oktobar',
+    'Novembar',
+    'Decembar',
+  ];
+
   public displayedColumnsTotal: string[] = [
     'passengers',
     'totalTicketPrice',
@@ -99,6 +145,33 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public lineOptions: ILineOptions[] = [];
 
   public generalData: ITableData[] = [];
+
+  public general: IGeneral[] = [
+    {
+      name: 'Doboj',
+      data: [],
+    },
+    {
+      name: 'Derventa',
+      data: [],
+    },
+    {
+      name: 'Prnjavor',
+      data: [],
+    },
+    {
+      name: 'Banja Luka',
+      data: [],
+    },
+    {
+      name: 'Laktaši',
+      data: [],
+    },
+    {
+      name: 'Gradiška',
+      data: [],
+    },
+  ];
 
   public campaignOne: FormGroup;
 
@@ -155,12 +228,14 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
           take(1),
           filter((data: IBusLine[]) => !!data),
           tap((lines: IBusLine[]) => {
+            const date: Date = new Date(this.campaignOne.controls.start.value);
+            const monthName: string = this.monthNames[date.getMonth()];
             this.lineOptions = lines
               .filter((lin: IBusLine) => lin.lineCountryStart === 'bih')
               .map(
                 (line: IBusLine) =>
                   ({
-                    lineName: `${line.lineCityStart} - ${line.lineCityEnd} - ${line.lineCityStart}`,
+                    lineName: `${line.lineCityStart} - ${line.lineCityEnd} - ${line.lineCityStart} ${monthName}`,
                     lineCity1: line.lineCityStart,
                     lineCity2: line.lineCityEnd,
                   } as ILineOptions),
@@ -185,49 +260,23 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
             return data.data.map((ticket: ITicket, index: number) => ({
               ...ticket,
               position: index + 1,
-              ticketIdToShow: ticket.ticketType === 'classic' ? `No.0${ticket.ticketClassicId}`: ticket.ticketId,
+              ticketIdToShow: ticket.ticketType === 'classic' ? `No.0${ticket.ticketClassicId}` : ticket.ticketId,
               ticketPrice: ticket.ticketType === 'return' ? 0 : ticket.ticketPrice,
               busLineData: this.getBusLineData(ticket.ticketBusLineId),
               totalKilometers: this.getTotalKilometers(ticket.ticketBusLineId),
-              taxInDE: +this.taxInDE(ticket.ticketBusLineId).toFixed(2),
+              taxInDE: +this.taxInDE(ticket.ticketBusLineId).toFixed(6),
               taxCalculatedOne: ticket.ticketType === 'return' ? 0 : +this.taxCalculatedOne(ticket).toFixed(2),
               taxCalculatedTwo: ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
               returnTaxDE:
-                ticket.ticketType === 'return' ? 0 : +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
+                ticket.ticketType === 'return' ?
+                  0 :
+                  +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
             }));
           }),
           tap((data: ITicket[]) => {
             this.tickets = [...data];
             this.generalData = [];
-            this.lineOptions.forEach((option: ILineOptions) => {
-              this.generalData.push({
-                name: option.lineName,
-                priceTotal: this.calculateTotalPrice(this.getLineTickets(option)),
-                bihTotal: this.calculateTotalBih(this.getLineTickets(option)),
-                deTotal: this.calculateTotalDe(this.getLineTickets(option)),
-                tranzitTotal: this.calculateTotalTranzit(this.getLineTickets(option)),
-                kmTotal: this.calculateTotalKilometers(this.getLineTickets(option)),
-                taxCalculatedOne: this.calculateTotalTaxOne(this.getLineTickets(option)),
-                taxCalculatedTwo: this.calculateTotalTaxTwo(this.getLineTickets(option)),
-                taxDeTotal: this.calculateTotalTax(this.getLineTickets(option)),
-                data: this.tickets
-                  .filter(
-                    (ticket: ITicket) =>
-                      (ticket.busLineData.lineCityStart === option.lineCity1 &&
-                        ticket.busLineData.lineCityEnd === option.lineCity2) ||
-                      (ticket.busLineData.lineCityStart === option.lineCity2 &&
-                        ticket.busLineData.lineCityEnd === option.lineCity1),
-                  )
-                  .map((tick: ITicket, index: number) => ({
-                    ...tick,
-                    ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
-                    position: index + 1,
-                  })),
-              });
-            });
-
-            console.log(this.generalData);
-
+            this.calculateInit();
             this.dataSource = new MatTableDataSource([...this.tickets]);
             this.dataSource.sort = this.sort;
 
@@ -251,52 +300,204 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
     });
   }
 
+  public getCityTickets(city: string): ITicket[] {
+    return this.tickets.filter(
+      (ticket: ITicket) => ticket.busLineData.lineCityStart === city || ticket.busLineData.lineCityEnd === city,
+    );
+  }
+
+  public getGeneral(): IGeneral[] {
+    return [
+      {
+        name: 'Doboj',
+        data: [],
+      },
+      {
+        name: 'Derventa',
+        data: [],
+      },
+      {
+        name: 'Prnjavor',
+        data: [],
+      },
+      {
+        name: 'Banja Luka',
+        data: [],
+      },
+      {
+        name: 'Laktaši',
+        data: [],
+      },
+      {
+        name: 'Gradiška',
+        data: [],
+      },
+    ];
+  }
+
+  public calculateInit(): void {
+    this.general = this.getGeneral();
+    this.lineOptions.forEach((option: ILineOptions) => {
+      const selectedCity: IGeneral = this.general.find(
+        (city: IGeneral) => city.name === option.lineCity1 || city.name === option.lineCity2,
+      );
+
+      selectedCity.data.push({
+        name: option.lineName,
+        priceTotal: this.calculateTotalPrice(this.getLineTickets(option)),
+        bihTotal: this.calculateTotalBih(this.getLineTickets(option)),
+        deTotal: this.calculateTotalDe(this.getLineTickets(option)),
+        tranzitTotal: this.calculateTotalTranzit(this.getLineTickets(option)),
+        kmTotal: this.calculateTotalKilometers(this.getLineTickets(option)),
+        taxCalculatedOne: this.calculateTotalTaxOne(this.getLineTickets(option)),
+        taxCalculatedTwo: this.calculateTotalTaxTwo(this.getLineTickets(option)),
+        taxDeTotal: this.calculateTotalTax(this.getLineTickets(option)),
+        data: this.tickets
+          .filter(
+            (ticket: ITicket) =>
+              (ticket.busLineData.lineCityStart === option.lineCity1 &&
+                ticket.busLineData.lineCityEnd === option.lineCity2) ||
+              (ticket.busLineData.lineCityStart === option.lineCity2 &&
+                ticket.busLineData.lineCityEnd === option.lineCity1),
+          )
+          .map((tick: ITicket, index: number) => ({
+            ...tick,
+            ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
+            position: index + 1,
+          })),
+      });
+
+      selectedCity.bihTotal = this.calculateTotalBih(this.getCityTickets(selectedCity.name));
+      selectedCity.deTotal = this.calculateTotalDe(this.getCityTickets(selectedCity.name));
+      selectedCity.tranzitTotal = this.calculateTotalTranzit(this.getCityTickets(selectedCity.name));
+      selectedCity.kmTotal = this.calculateTotalKilometers(this.getCityTickets(selectedCity.name));
+      selectedCity.priceTotal = this.calculateTotalPrice(this.getCityTickets(selectedCity.name));
+      selectedCity.taxCalculatedOne = this.calculateTotalTaxOne(this.getCityTickets(selectedCity.name));
+      selectedCity.taxCalculatedTwo = this.calculateTotalTaxTwo(this.getCityTickets(selectedCity.name));
+      selectedCity.taxDeTotal = this.calculateTotalTax(this.getCityTickets(selectedCity.name));
+      selectedCity.totalPassengers = this.calculateTotalPassengers(this.getCityTickets(selectedCity.name));
+    });
+  }
+
+  public calculateBeforePrint(): IGeneral[] {
+    const generalToPrint: IGeneral[] = [...this.getGeneral()];
+    this.lineOptions.forEach((option: ILineOptions) => {
+      const selectedCity: IGeneral = generalToPrint.find(
+        (city: IGeneral) => city.name === option.lineCity1 || city.name === option.lineCity2,
+      );
+
+      selectedCity.data.push({
+        name: option.lineName,
+        priceTotal: this.calculateTotalPrice(this.getLineTickets(option)),
+        bihTotal: this.calculateTotalBih(this.getLineTickets(option)),
+        deTotal: this.calculateTotalDe(this.getLineTickets(option)),
+        tranzitTotal: this.calculateTotalTranzit(this.getLineTickets(option)),
+        kmTotal: this.calculateTotalKilometers(this.getLineTickets(option)),
+        taxCalculatedOne: this.calculateTotalTaxOne(this.getLineTickets(option)),
+        taxCalculatedTwo: this.calculateTotalTaxTwo(this.getLineTickets(option)),
+        taxDeTotal: this.calculateTotalTax(this.getLineTickets(option)),
+        data: this.tickets
+          .filter(
+            (ticket: ITicket) =>
+              (ticket.busLineData.lineCityStart === option.lineCity1 &&
+                ticket.busLineData.lineCityEnd === option.lineCity2) ||
+              (ticket.busLineData.lineCityStart === option.lineCity2 &&
+                ticket.busLineData.lineCityEnd === option.lineCity1),
+          ).filter((tic: ITicket) => !this.checkSelection(tic))
+          .map((tick: ITicket, index: number) => ({
+            ...tick,
+            ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
+            position: index + 1,
+          })),
+      });
+
+      selectedCity.bihTotal = this.calculateTotalBih(this.getCityTickets(selectedCity.name));
+      selectedCity.deTotal = this.calculateTotalDe(this.getCityTickets(selectedCity.name));
+      selectedCity.tranzitTotal = this.calculateTotalTranzit(this.getCityTickets(selectedCity.name));
+      selectedCity.kmTotal = this.calculateTotalKilometers(this.getCityTickets(selectedCity.name));
+      selectedCity.priceTotal = this.calculateTotalPrice(this.getCityTickets(selectedCity.name));
+      selectedCity.taxCalculatedOne = this.calculateTotalTaxOne(this.getCityTickets(selectedCity.name));
+      selectedCity.taxCalculatedTwo = this.calculateTotalTaxTwo(this.getCityTickets(selectedCity.name));
+      selectedCity.taxDeTotal = this.calculateTotalTax(this.getCityTickets(selectedCity.name));
+      selectedCity.totalPassengers = this.calculateTotalPassengers(this.getCityTickets(selectedCity.name));
+    });
+
+    return generalToPrint;
+  }
+
   public printReport(): void {
-    this.reportService
-      .printReport(this.generalData, 'MART')
-      .pipe(
-        take(1),
-        tap((response: ArrayBuffer) => {
-          if (this.platform.is('android') || this.platform.is('iphone')) {
-            try {
-              File.writeFile(
-                File.documentsDirectory,
-                'izvjestaj.pdf',
-                new Blob([response], { type: 'application/pdf' }),
-                {
-                  replace: true,
-                },
-              ).catch((error: Error) => throwError(error));
 
-              File.writeFile(
-                File.externalRootDirectory + '/Download',
-                'izvjestaj.pdf',
-                new Blob([response], { type: 'application/pdf' }),
-                {
-                  replace: true,
-                },
-              ).catch((error: Error) => throwError(error));
-            } catch (err) {
-              throwError(err);
+    this.presentLoading('Printanje PDF-a...').then(() => {
+      const finals: IFinals = {
+        calc1: +(this.calculateTotalPrice(this.tickets) - this.calculateTotalTaxOne(this.tickets)).toFixed(2),
+      };
+
+      const totals: ITotals = {
+        totalPassengers: this.calculateTotalPassengers(this.tickets),
+        totalKm: this.calculateTotalKilometers(this.tickets),
+        totalKmBih: this.calculateTotalBih(this.tickets),
+        totalKmDe: this.calculateTotalDe(this.tickets),
+        totalKmTranzit: this.calculateTotalTranzit(this.tickets),
+        totalPrice: this.calculateTotalPrice(this.tickets),
+        totalTaxDe: '---',
+        totalTaxCalculatedOne: this.calculateTotalTaxOne(this.tickets),
+        totalTaxCalculatedTwo: this.calculateTotalTaxTwo(this.tickets),
+        totalTaxReturn: this.calculateTotalTax(this.tickets),
+      };
+      const date: Date = new Date(this.campaignOne.controls.start.value);
+      const monthName: string = this.monthNames[date.getMonth()].toUpperCase();
+      const year: string = date.getFullYear().toString().toUpperCase();
+      const printData: IGeneral[] = this.calculateBeforePrint();
+      this.reportService
+        .printReport([...printData], monthName, year, totals, finals)
+        .pipe(
+          take(1),
+          tap((response: ArrayBuffer) => {
+            if (this.platform.is('android') || this.platform.is('iphone')) {
+              try {
+                File.writeFile(
+                  File.documentsDirectory,
+                  `izvjestaj_${monthName}_${year}.pdf`,
+                  new Blob([response], { type: 'application/pdf' }),
+                  {
+                    replace: true,
+                  },
+                ).catch((error: Error) => throwError(error));
+
+                File.writeFile(
+                  File.externalRootDirectory + '/Download',
+                  `izvjestaj_${monthName}_${year}.pdf`,
+                  new Blob([response], { type: 'application/pdf' }),
+                  {
+                    replace: true,
+                  },
+                ).catch((error: Error) => throwError(error));
+              } catch (err) {
+                throwError(err);
+              }
+            } else {
+              const file: Blob = new Blob([response], { type: 'application/pdf' });
+              const fileURL: string = URL.createObjectURL(file);
+              window.open(fileURL);
+              saveAs(file, `izvjestaj_${monthName}_${year}.pdf`);
             }
-          } else {
-            const file: Blob = new Blob([response], { type: 'application/pdf' });
-            const fileURL: string = URL.createObjectURL(file);
-            window.open(fileURL);
-            saveAs(file, 'izvjestaj.pdf');
-          }
-        }),
-        tap(() => {
-          this.loadingController.dismiss();
-          FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj.pdf', 'application/pdf');
-        }),
-        catchError((error: Error) => {
-          this.loadingController.dismiss();
+          }),
+          tap(() => {
+            this.loadingController.dismiss();
+            FileOpener.open(File.externalRootDirectory + '/Downloads/' + `izvjestaj_${monthName}_${year}.pdf`, 'application/pdf');
+          }),
+          catchError((error: Error) => {
+            this.loadingController.dismiss();
 
-          return throwError(error);
-        }),
-      )
-      .subscribe();
+            return throwError(error);
+          }),
+        )
+        .subscribe();
+    }).catch((error: Error) => {
+      this.loadingController.dismiss();
+
+      return throwError(error);
+    });
   }
 
   public getLineTickets(option: ILineOptions): ITicket[] {

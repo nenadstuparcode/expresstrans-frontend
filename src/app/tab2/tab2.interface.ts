@@ -1,3 +1,5 @@
+import {ITicket} from '@app/tab1/ticket.interface';
+
 export interface ICreateBusLinePayload {
   lineCityStart: string;
   lineCityEnd: string;
@@ -83,15 +85,65 @@ export interface ICreateInvoicePayload {
   invoiceDateReturn: string;
   invoiceVehicle: string;
   invoiceDrivers: string[];
+  invoiceExpCro: number;
+  invoiceExpSlo: number;
+  invoiceExpAus: number;
+  invoiceExpGer: number;
+  invoiceInitialExpenses: number;
+  invoiceInitialExpensesDesc: string;
+  invoiceUnexpectedExpenses: number;
+  invoiceUnexpectedExpensesDesc: string;
+  totalKilometers: number;
+  bihKilometers: number;
+  diffKilometers: number;
+  firstCalculation: number;
+  secondCalculation: number;
+  returnTaxBih: number;
   invoiceNumber: number;
 }
 
-export interface  ICreateInvoiceResponse {
+export interface IUpdateInvoicePayload {
+  invoiceExpCro: number;
+  invoiceExpSlo: number;
+  invoiceExpAus: number;
+  invoiceExpGer: number;
+  invoiceInitialExpenses: number;
+  invoiceInitialExpensesDesc: string;
+  invoiceUnexpectedExpenses: number;
+  invoiceUnexpectedExpensesDesc: string;
+  invoiceDrivers: IDriver[];
+}
+
+export interface IUpdateInvoicePayloadTax {
+  totalKilometers: number;
+  bihKilometers: number;
+  diffKilometers: number;
+  firstCalculation: number;
+  secondCalculation: number;
+  returnTaxBih: number;
+  invoiceDrivers: IDriver[];
+}
+
+export interface ICreateInvoiceResponse {
   _id: string;
   invoiceNumber: number;
   invoiceDateStart: string;
   invoiceDateReturn: string;
   invoiceVehicle: string;
+  invoiceExpCro: number;
+  invoiceExpSlo: number;
+  invoiceExpAus: number;
+  invoiceExpGer: number;
+  invoiceInitialExpenses: number;
+  invoiceInitialExpensesDesc: string;
+  invoiceUnexpectedExpenses: number;
+  invoiceUnexpectedExpensesDesc: string;
+  totalKilometers: number;
+  bihKilometers: number;
+  diffKilometers: number;
+  firstCalculation: number;
+  secondCalculation: number;
+  returnTaxBih: number;
   invoiceDrivers: string[];
 }
 
@@ -101,9 +153,36 @@ export interface IInvoice {
   invoiceDateStart: string;
   invoiceDateReturn: string;
   invoiceVehicle: string;
+  invoiceExpCro: number;
+  invoiceExpSlo: number;
+  invoiceExpAus: number;
+  invoiceExpGer: number;
+  invoiceInitialExpenses: number;
+  invoiceInitialExpensesDesc: string;
+  invoiceUnexpectedExpenses: number;
+  invoiceUnexpectedExpensesDesc: string;
+  totalKilometers: number;
+  bihKilometers: number;
+  diffKilometers: number;
+  firstCalculation: number;
+  secondCalculation: number;
+  returnTaxBih: number;
+  invoiceTotalBill: number;
   invoiceDrivers: any[];
   driversArray?: string;
   createdAt: string;
   user: string;
   modifiedAt: string;
+}
+
+export interface IPrintInvoiceTaxPayload {
+  invoice: IInvoice;
+  bihTickets: ITicket[];
+  deTickets: ITicket[];
+  expenses: IUpdateInvoicePayload;
+  tax: IUpdateInvoicePayloadTax;
+  totalPriceDe: number;
+  totalPriceBih: number;
+  drivers?: string;
+  showExpenses?: boolean;
 }

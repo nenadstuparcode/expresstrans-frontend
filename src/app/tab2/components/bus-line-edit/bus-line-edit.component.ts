@@ -9,7 +9,7 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { BusLineService } from '@app/tab2/bus-line.service';
-import { catchError, filter, take, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, take, tap } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { ICommonResponse } from '@app/services/user.interface';
 import { IBusLine } from '@app/tab2/tab2.interface';
@@ -124,7 +124,6 @@ export class BusLineEditComponent implements OnInit, OnDestroy {
 
               return throwError(err);
             }),
-            takeUntil(this.componentDestroyed$),
           )
           .subscribe();
       })

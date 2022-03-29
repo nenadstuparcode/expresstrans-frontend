@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { DriverService } from '@app/tab2/driver.service';
 import { IVehicle } from '@app/tab2/tab2.interface';
-import { catchError, filter, take, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, take, tap } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { Subject, throwError } from 'rxjs';
 
@@ -67,7 +67,7 @@ export class UpdateVehicleComponent implements OnInit, OnDestroy {
 
               return throwError(err);
             }),
-            takeUntil(this.componentDestroyed$),
+            take(1),
           )
           .subscribe();
       })

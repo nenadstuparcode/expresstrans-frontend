@@ -135,7 +135,7 @@ export class BusLinesComponent implements OnInit, OnDestroy {
           this.presentToast('Linija je obrisana.');
           this.busLines = [...this.busLines.filter((busLine: IBusLine) => busLine._id !== id)];
         }),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }

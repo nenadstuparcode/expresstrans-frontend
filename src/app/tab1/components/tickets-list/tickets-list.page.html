@@ -104,6 +104,12 @@
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Učitavanje rezultata...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
+  <ion-fab class="table-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button [routerLink]="'/karte/faktura'">
+      <ion-icon color="light" size="large" name="list"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
   <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
     <ion-fab-button (click)="createTicket()">
       <ion-icon color="light" size="large" name="add-sharp"></ion-icon>

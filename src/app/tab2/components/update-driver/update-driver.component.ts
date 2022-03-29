@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController, ToastController } from '@ionic/angular';
 import { DriverService } from '@app/tab2/driver.service';
 import { IDriver } from '@app/tab2/tab2.interface';
-import { catchError, filter, take, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, take, tap } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { Subject, throwError } from 'rxjs';
 
@@ -45,7 +45,7 @@ export class UpdateDriverComponent implements OnInit, OnDestroy {
   public async presentToast(msg: string): Promise<void> {
     const toast: HTMLIonToastElement = await this.toastCtrl.create({
       message: msg,
-      duration: 2500,
+      duration: 2000,
     });
     await toast.present();
   }
@@ -68,7 +68,7 @@ export class UpdateDriverComponent implements OnInit, OnDestroy {
 
               return throwError(err);
             }),
-            takeUntil(this.componentDestroyed$),
+            take(1),
           )
           .subscribe();
       })

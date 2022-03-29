@@ -3,10 +3,10 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ICommonResponse } from '@app/services/user.interface';
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { ITicket } from '@app/tab1/ticket.interface';
 import { environment } from '@env/environment';
-import {ITableData} from '@app/tab2/components/reports-city/reports-city.component';
+import {IFinals, IGeneral, ITotals} from '@app/tab2/components/reports-city/reports-city.component';
 
 @Injectable({
   providedIn: 'root',
@@ -25,17 +25,16 @@ export class ReportService {
   }): Observable<ICommonResponse<ITicket[]>> {
     return this.http
       .post(`${environment.apiUrl}/ticket/report`, payload)
-      .pipe(filter((data: ICommonResponse<ITicket[]>) => !!data));
+      .pipe(map((data: ICommonResponse<ITicket[]>) => { return data }));
   }
 
   //'responseType'  : 'blob' as 'json'        //This also worked
-  public printReport(generalData: ITableData[], month: string): Observable<ArrayBuffer> {
+  public printReport(general: IGeneral[], month: string, year: string, totals: ITotals, finals: IFinals): Observable<ArrayBuffer> {
     const httpOptions: any = {
       responseType: 'arraybuffer' as 'json',
     };
 
-    return this.http.post(`${environment.apiUrl}/ticket/report-print`, { generalData, month }, httpOptions).pipe(
-      filter((data: any) => !!data),
+    return this.http.post(`${environment.apiUrl}/ticket/report-print`, { general, month, year, totals, finals }, httpOptions).pipe(
       map((data: ArrayBuffer) => data),
     );
   }

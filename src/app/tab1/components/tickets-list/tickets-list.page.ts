@@ -144,7 +144,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
 
             return throwError(err);
           }),
-          takeUntil(this.componentDestroyed$),
+          take(1),
         )
         .subscribe();
     });
@@ -484,7 +484,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
 
               return throwError(error);
             }),
-            takeUntil(this.componentDestroyed$),
+            take(1),
           )
           .subscribe();
       })

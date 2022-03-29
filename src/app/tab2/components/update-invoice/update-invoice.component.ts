@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { filter, take, takeUntil, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { ICreateInvoiceResponse, IDriver, IInvoice, IVehicle } from '@app/tab2/tab2.interface';
 import { combineLatest, Subject, throwError } from 'rxjs';
@@ -40,7 +40,7 @@ export class UpdateInvoiceComponent implements OnInit, OnDestroy {
         tap(() => {
           this.updateInvoiceForm = this.initiateUpdateForm(this.invoiceData);
         }),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
 
@@ -54,8 +54,23 @@ export class UpdateInvoiceComponent implements OnInit, OnDestroy {
       invoiceDateStart: this.fb.control(invoice.invoiceDateStart, Validators.required),
       invoiceDateReturn: this.fb.control(invoice.invoiceDateReturn, Validators.required),
       invoiceVehicle: this.fb.control(invoice.invoiceVehicle, Validators.required),
-      invoiceDrivers: this.fb.array(invoice.invoiceDrivers, Validators.required),
+      invoiceDrivers: this.fb.array(invoice.invoiceDrivers ? invoice.invoiceDrivers : [], Validators.required),
+      invoiceExpCro: this.fb.control(invoice.invoiceExpCro ? invoice.invoiceExpCro : 0, Validators.required),
+      invoiceExpSlo: this.fb.control(invoice.invoiceExpSlo ? invoice.invoiceExpSlo : 0, Validators.required),
+      invoiceExpAus: this.fb.control(invoice.invoiceExpAus ? invoice.invoiceExpAus : 0, Validators.required),
+      invoiceExpGer: this.fb.control(invoice.invoiceExpGer ? invoice.invoiceExpGer : 0, Validators.required),
+      invoiceInitialExpenses: this.fb.control(invoice.invoiceInitialExpenses ? invoice.invoiceInitialExpenses : 0, Validators.required),
+      invoiceInitialExpensesDesc: this.fb.control(invoice.invoiceInitialExpensesDesc ? invoice.invoiceInitialExpensesDesc : ''),
+      invoiceUnexpectedExpenses: this.fb.control(invoice.invoiceUnexpectedExpenses ? invoice.invoiceUnexpectedExpenses : 0, Validators.required),
+      invoiceUnexpectedExpensesDesc: this.fb.control(invoice.invoiceUnexpectedExpensesDesc ? invoice.invoiceUnexpectedExpensesDesc : 0),
+      totalKilometers: this.fb.control(invoice.totalKilometers ? invoice.totalKilometers : 0, Validators.required),
+      bihKilometers: this.fb.control(invoice.bihKilometers ? invoice.bihKilometers : 0, Validators.required),
+      diffKilometers: this.fb.control(invoice.diffKilometers ? invoice.bihKilometers : 0, Validators.required),
+      firstCalculation: this.fb.control(invoice.firstCalculation ? invoice.firstCalculation : 0, Validators.required),
+      secondCalculation: this.fb.control(invoice.secondCalculation ? invoice.secondCalculation : 0, Validators.required),
+      returnTaxBih: this.fb.control(invoice.returnTaxBih ? invoice.returnTaxBih : 0, Validators.required),
       invoiceNumber: this.fb.control(invoice.invoiceNumber),
+      invoiceTotalBill: this.fb.control(invoice.invoiceTotalBill, Validators.required),
     });
   }
 
@@ -109,7 +124,6 @@ export class UpdateInvoiceComponent implements OnInit, OnDestroy {
               this.loadingCtrl.dismiss();
               this.modalCtrl.dismiss(data.data, 'update');
             }),
-            takeUntil(this.componentDestroyed$),
           )
           .subscribe();
       })

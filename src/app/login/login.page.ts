@@ -1,65 +1,81 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UserServiceService } from '@app/services/user-service.service';
 import { Subject, throwError } from 'rxjs';
-import { catchError, filter, takeUntil, tap } from 'rxjs/operators';
-import { ICommonResponse, IUser } from '@app/services/user.interface';
+import { catchError, filter, take, tap } from 'rxjs/operators';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ToastController } from '@ionic/angular';
+import { LoadingController, ToastController } from '@ionic/angular';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
-  styleUrls: ['./login.page.scss']
+  styleUrls: ['./login.page.scss'],
 })
 export class LoginPage implements OnInit, OnDestroy {
   public componentDestroyed$: Subject<void> = new Subject<void>();
-  public showPassword1 = false;
+  public showPassword1: boolean = false;
   public loginForm: FormGroup;
 
   constructor(
     private userService: UserServiceService,
     private fb: FormBuilder,
     private router: Router,
-    private toastCtrl: ToastController
+    private toastCtrl: ToastController,
+    private loadingCtrl: LoadingController,
   ) {}
 
   public ngOnInit(): void {
     this.loginForm = this.fb.group({
       email: this.fb.control('', [Validators.required, Validators.email]),
-      password: this.fb.control('', [
-        Validators.required,
-        Validators.minLength(6)
-      ])
+      password: this.fb.control('', [Validators.required, Validators.minLength(6)]),
+    });
+  }
+
+  public async presentLoading(msg: string): Promise<void> {
+    const loading: HTMLIonLoadingElement = await this.loadingCtrl.create({
+      cssClass: 'my-custom-class',
+      message: msg,
+    });
+
+    await loading.present().catch((err: Error) => {
+      this.presentToast(err.message);
     });
   }
 
   public login(): void {
-    this.userService
-      .login(
-        this.loginForm.get('email').value,
-        this.loginForm.get('password').value
-      )
-      .pipe(
-        filter(
-          (data: ICommonResponse<IUser>) => !!data && this.loginForm.valid
-        ),
-        takeUntil(this.componentDestroyed$),
-        tap(() => this.router.navigate(['/karte'])),
-        catchError((err: any) => {
-          this.presentToast(err);
+    this.presentLoading('Prijava u toku')
+      .then(() => {
+        this.userService
+          .login(this.loginForm.get('email').value, this.loginForm.get('password').value)
+          .pipe(
+            filter(() => this.loginForm.valid),
+            take(1),
+            tap(() => {
+              this.router.navigate(['/karte']);
+              this.loadingCtrl.dismiss();
+            }),
+            catchError((error: Error) => {
+              this.loadingCtrl.dismiss();
+              this.presentToast(error.message);
 
-          return throwError(err);
-        })
-      )
-      .subscribe();
+              return throwError(error);
+            }),
+          )
+          .subscribe();
+      })
+      .catch((error: Error) => {
+        this.loadingCtrl.dismiss();
+        this.presentToast(error.message);
+
+        return throwError(error);
+      });
   }
 
-  async presentToast(msg: string) {
-    const toast = await this.toastCtrl.create({
+  public async presentToast(msg: string): Promise<void> {
+    const toast: HTMLIonToastElement = await this.toastCtrl.create({
       message: msg,
       duration: 2000,
-      color: 'primary'
+      color: 'primary',
     });
     toast.present();
   }

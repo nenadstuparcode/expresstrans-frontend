@@ -1,0 +1,591 @@
+<ion-content>
+  <div class="row">
+    <div class="col-lg-10 offset-lg-1">
+
+      <nav mat-tab-nav-bar [tabPanel]="tabPanel">
+        <a mat-tab-link (click)="addInvoice()"
+           [active]="activeLink === 1">
+          <ion-icon size="large" color="primary" name="add-sharp"></ion-icon>
+        </a>
+        <a mat-tab-link *ngFor="let invoice of invoices"
+           (click)="loadInvoice(invoice.invoiceNumber)"
+           [active]="activeLink === invoice.invoiceNumber">
+          <div class="invoice">
+            <span class="invoice-nr">{{invoice.invoiceNumber}}</span>
+            <span class="invoice-period">{{invoice.invoiceDateStart | date: "dd MMM YY"}} - {{invoice.invoiceDateReturn | date: "dd MMM YY"}}</span>
+          </div>
+        </a>
+        <a mat-tab-link (click)="loadMoreInvoices()">Učitaj</a>
+      </nav>
+      <mat-tab-nav-panel #tabPanel>
+        <!-- BiH karte -->
+        <span class="invoice-headline">
+            <ion-avatar>
+              <img [src]="bihImage"/>
+            </ion-avatar>
+          Iz BIH</span>
+        <div class="mat-table-container mat-elevation-z8" *ngIf="ticketsOneWay && oneWayForm">
+          <table
+            mat-table
+            #matTable
+            [dataSource]="ticketsOneWay">
+            <div [formGroup]="oneWayForm">
+              <ng-container matColumnDef="position">
+                <th mat-header-cell *matHeaderCellDef>{{ 'No.' }}</th>
+                <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Vrsta Karte</mat-label>
+                    <select formControlName="ticketType" matNativeControl>
+                      <option value="classic">Klasična</option>
+                      <option value="internet">Internet</option>
+                      <option value="return">Povratna</option>
+                    </select>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketInvoiceNumber">
+                <th mat-header-cell *matHeaderCellDef>Broj Fakture</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketInvoiceNumber }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Broj Fakture</mat-label>
+                    <input type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketIdToShow">
+                <th mat-header-cell *matHeaderCellDef>Broj Karte</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketIdToShow }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Broj Karte</mat-label>
+                    <input type="number" formControlName="ticketClassicId" matInput placeholder="Broj Karte">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketStartDate">
+                <th mat-header-cell *matHeaderCellDef>Datum</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketStartDate | date: 'dd/MM/YYYY' }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Datum</mat-label>
+                    <input matInput [matDatepicker]="picker1" formControlName="ticketStartDate">
+                    <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketStartTime">
+                <th mat-header-cell *matHeaderCellDef>Vrijeme</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketStartTime | date: 'HH:mm' }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <button (click)="openDateModal('time', false)" class="btn btn-small standard-button">
+                    {{oneWayForm.controls.ticketStartTime.value ?
+                    (oneWayForm.controls.ticketStartTime.value | date: "HH:mm") : 'Vrijeme'  }}
+                  </button>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketOnName">
+                <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketOnName }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Ime i Prezime</mat-label>
+                    <input type="text" formControlName="ticketOnName" matInput placeholder="Ime i prezime">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketRoundTrip">
+                <th mat-header-cell *matHeaderCellDef>Vrsta Karte</th>
+                <td mat-cell class="align-middle" *matCellDef="let element">
+                  <div class="d-flex" *ngIf="element.ticketType !== TicketTypes.return; else returnTicketIcon">
+                    <ion-icon
+                      class="ticket-type-icon"
+                      [color]="element.ticketRoundTrip ? 'primary' : 'secondary'"
+                      [name]="element.ticketRoundTrip ? 'repeat-outline' : 'return-down-forward-outline'"
+                    ></ion-icon>
+                    <span>{{ element.ticketRoundTrip ? 'Povratna' : 'Jedan Smjer' }}</span>
+                  </div>
+                  <ng-template #returnTicketIcon>
+                    <div class="d-flex">
+                      <ion-icon class="ticket-type-icon" color="danger" name="return-down-back-outline"></ion-icon>
+                      <span>Koristenje povratne</span>
+                    </div>
+                  </ng-template>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Vrsta Karte</mat-label>
+                    <select formControlName="ticketRoundTrip" matNativeControl>
+                      <option value="false">Jedan Smijer</option>
+                      <option value="true">Povratna</option>
+                    </select>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="busLineData">
+                <th mat-header-cell *matHeaderCellDef>Relacija</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.busLineData.lineCityStart }} - {{ element.busLineData.lineCityEnd }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field class="width-130" appearance="legacy">
+                    <mat-label>Linija</mat-label>
+                    <input type="text"
+                           placeholder="Izaberi liniju"
+                           matInput
+                           formControlName="ticketBusLineId"
+                           [matAutocomplete]="auto">
+                    <mat-autocomplete [displayWith]="displayFnBih" autoActiveFirstOption #auto="matAutocomplete">
+                      <mat-option *ngFor="let busline of filteredBuslinesBih | async"  [value]="busline._id">
+                        {{busline.lineCityStart}} - {{busline.lineCityEnd}}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketPrice">
+                <th mat-header-cell *matHeaderCellDef>Cijena</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.ticketPrice | currency }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Cijena</mat-label>
+                    <input type="number" formControlName="ticketPrice" matInput placeholder="Cijena">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>
+                  <span class="ion-float-end">Akcije</span>
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="d-flex action-icons ion-float-end">
+                    <ion-icon size="small" name="create-outline" (click)="editTicket(element)"></ion-icon>
+                    <ion-icon size="small" name="trash" (click)="deleteTicketModal(element)"></ion-icon>
+                  </div>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <div class="d-flex action-icons ion-float-end">
+                    <button
+                      [disabled]="!oneWayForm.valid"
+                      (click)="createTicket(oneWayForm, false)"
+                      class="btn btn-outline-dark standard-button"
+                    >Dodaj</button>
+                  </div>
+                </td>
+              </ng-container>
+            </div>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+          </table>
+        </div>
+        <div class="total-price">
+          <span>Ukupno: {{ totalPriceBih | currency }}</span>
+        </div>
+        <!-- De karte -->
+        <span class="invoice-headline">
+          <ion-avatar>
+            <img [src]="deImage"/>
+          </ion-avatar>
+          Iz DE</span>
+        <div class="mat-table-container mat-elevation-z8" *ngIf="ticketsReturn && returnForm">
+          <table
+            mat-table
+            #matTable
+            [dataSource]="ticketsReturn">
+            <div [formGroup]="returnForm">
+              <ng-container matColumnDef="position">
+                <th mat-header-cell *matHeaderCellDef>{{ 'No.' }}</th>
+                <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Vrsta Karte</mat-label>
+                    <select formControlName="ticketType" matNativeControl>
+                      <option value="classic">Klasična</option>
+                      <option value="internet">Internet</option>
+                      <option value="return">Povratna</option>
+                    </select>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketInvoiceNumber">
+                <th mat-header-cell *matHeaderCellDef>Broj Fakture</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketInvoiceNumber }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Broj Fakture</mat-label>
+                    <input type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketIdToShow">
+                <th mat-header-cell *matHeaderCellDef>Broj Karte</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketIdToShow }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Broj Karte</mat-label>
+                    <input type="number" formControlName="ticketClassicId" matInput placeholder="Broj Karte">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketStartDate">
+                <th mat-header-cell *matHeaderCellDef>Datum</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketStartDate | date: 'dd/MM/YYYY' }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Datum</mat-label>
+                    <input matInput [matDatepicker]="picker1" formControlName="ticketStartDate">
+                    <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketStartTime">
+                <th mat-header-cell *matHeaderCellDef>Vrijeme</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketStartTime | date: 'HH:mm' }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <button (click)="openDateModal('time', true)" class="btn btn-small standard-button">
+                    {{returnForm.controls.ticketStartTime.value ?
+                    (returnForm.controls.ticketStartTime.value | date: "HH:mm") : 'Vrijeme'  }}
+                  </button>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketOnName">
+                <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
+                <td mat-cell *matCellDef="let element">{{ element.ticketOnName }}</td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Ime i Prezime</mat-label>
+                    <input type="text" formControlName="ticketOnName" matInput placeholder="Ime i prezime">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketRoundTrip">
+                <th mat-header-cell *matHeaderCellDef>Vrsta Karte</th>
+                <td mat-cell class="align-middle" *matCellDef="let element">
+                  <div class="d-flex" *ngIf="element.ticketType !== TicketTypes.return; else returnTicketIcon">
+                    <ion-icon
+                      class="ticket-type-icon"
+                      [color]="element.ticketRoundTrip ? 'primary' : 'secondary'"
+                      [name]="element.ticketRoundTrip ? 'repeat-outline' : 'return-down-forward-outline'"
+                    ></ion-icon>
+                    <span>{{ element.ticketRoundTrip ? 'Povratna' : 'Jedan Smjer' }}</span>
+                  </div>
+                  <ng-template #returnTicketIcon>
+                    <div class="d-flex">
+                      <ion-icon class="ticket-type-icon" color="danger" name="return-down-back-outline"></ion-icon>
+                      <span>Koristenje povratne</span>
+                    </div>
+                  </ng-template>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Vrsta Karte</mat-label>
+                    <select formControlName="ticketRoundTrip" matNativeControl>
+                      <option value="false">Jedan Smijer</option>
+                      <option value="true">Povratna</option>
+                    </select>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="busLineData">
+                <th mat-header-cell *matHeaderCellDef>Relacija</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.busLineData.lineCityStart }} - {{ element.busLineData.lineCityEnd }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field class="width-130" appearance="legacy">
+                    <mat-label>Linija</mat-label>
+                    <input type="text"
+                           placeholder="Izaberi liniju"
+                           matInput
+                           formControlName="ticketBusLineId"
+                           [matAutocomplete]="auto">
+                    <mat-autocomplete [displayWith]="displayFnDe" autoActiveFirstOption #auto="matAutocomplete">
+                      <mat-option *ngFor="let busline of filteredBuslinesDe | async"  [value]="busline._id">
+                        {{busline.lineCityStart}} - {{busline.lineCityEnd}}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="ticketPrice">
+                <th mat-header-cell *matHeaderCellDef>Cijena</th>
+                <td mat-cell *matCellDef="let element">
+                  {{ element.ticketPrice | currency }}
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field appearance="legacy" class="width-80">
+                    <mat-label>Cijena</mat-label>
+                    <input type="number" formControlName="ticketPrice" matInput placeholder="Cijena">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef>
+                  <span class="ion-float-end">Akcije</span>
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="d-flex action-icons ion-float-end">
+                    <ion-icon size="small" name="create-outline" (click)="editTicket(element)"></ion-icon>
+                    <ion-icon size="small" name="trash" (click)="deleteTicketModal(element)"></ion-icon>
+                  </div>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <div class="d-flex action-icons ion-float-end">
+                    <button
+                      [disabled]="!returnForm.valid"
+                      (click)="createTicket(returnForm, false)"
+                      class="btn btn-outline-dark standard-button"
+                    >Dodaj</button>
+                  </div>
+                </td>
+              </ng-container>
+            </div>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+            <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
+          </table>
+        </div>
+        <div class="total-price">
+          <span>Ukupno: {{ totalPriceDe | currency }}</span>
+        </div>
+        <!-- Troskovi -->
+        <span class="invoice-headline" *ngIf="tickets?.length">Troškovi</span>
+        <div class="mat-table-container mat-elevation-z8">
+          <table *ngIf="expensesForm && tickets?.length" mat-table [dataSource]="[1]">
+            <div [formGroup]="expensesForm">
+              <ng-container matColumnDef="expCroatia">
+                <th mat-header-cell *matHeaderCellDef> Hrvatska </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceExpCro" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expSlovenia">
+                <th mat-header-cell *matHeaderCellDef> Slovenija </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceExpSlo" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expAustria">
+                <th mat-header-cell *matHeaderCellDef> Austrija </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceExpAus" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expGermany">
+                <th mat-header-cell *matHeaderCellDef> Njemacka </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceExpGer" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expInitially">
+                <th mat-header-cell *matHeaderCellDef> Zaduzio </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceInitialExpenses" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field class="width-130" appearance="legacy">
+                    <mat-label>Opis</mat-label>
+                    <textarea formControlName="invoiceInitialExpensesDesc" matInput></textarea>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="billed">
+                <th mat-header-cell *matHeaderCellDef> Naplatio </th>
+                <td mat-cell *matCellDef="let element">
+                  {{ calculateTotalPrice(tickets) | currency }}
+                  <span matSuffix> ({{ calculateTotal()}} KM)</span>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expInCountries">
+                <th mat-header-cell *matHeaderCellDef> Troskovi </th>
+                <td mat-cell *matCellDef="let element"> {{ calculateTotalCountryExpenses() | currency }} </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="expUnexpected">
+                <th mat-header-cell *matHeaderCellDef> Ostalo </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Troskovi</mat-label>
+                    <span matSuffix>€</span>
+                    <input type="number" formControlName="invoiceUnexpectedExpenses" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <mat-form-field class="width-130" appearance="legacy">
+                    <mat-label>Opis</mat-label>
+                    <textarea matInput formControlName="invoiceUnexpectedExpensesDesc"></textarea>
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="totalBilling">
+                <th mat-header-cell *matHeaderCellDef>
+                  <span class="ion-float-end">Za isplatiti</span>
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="ion-float-end">{{ calculateBilling() | currency }} ({{calculateBillingKM()}} KM)</span>
+                </td>
+                <td mat-footer-cell *matFooterCellDef>
+                  <button
+                    (click)="updateInvoiceExpenses()"
+                    [ngClass]="needUpdateExpenses ? 'btn btn-danger standard-button ion-float-end' : 'btn btn-outline-dark standard-button ion-float-end'"
+                  >{{ needUpdateExpenses ? 'Ažuriraj' : 'Potvrdi'}}</button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="expensesColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: expensesColumns;"></tr>
+              <tr mat-footer-row *matFooterRowDef="expensesColumns"></tr>
+            </div>
+          </table>
+        </div>
+
+        <!-- Porez -->
+        <span class="invoice-headline" *ngIf="tickets?.length">Porez</span>
+        <div class="mat-table-container mat-elevation-z8">
+          <table *ngIf="tickets?.length" mat-table [dataSource]="[1]">
+            <div [formGroup]="taxForm">
+
+              <ng-container matColumnDef="totalKilometers">
+                <th mat-header-cell *matHeaderCellDef> Ukupno Kilometara </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Kilometri</mat-label>
+                    <span matSuffix>km</span>
+                    <input type="number" formControlName="totalKilometers" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="totalKilometersBih">
+                <th mat-header-cell *matHeaderCellDef> Kilometri BIH </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-form-field class="width-80" appearance="legacy">
+                    <mat-label>Kilometri</mat-label>
+                    <span matSuffix>km</span>
+                    <input type="number" formControlName="bihKilometers" matInput>
+                  </mat-form-field>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="diffKilometers">
+                <th mat-header-cell *matHeaderCellDef> Kilometri odnos </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-label>{{ taxForm.controls['diffKilometers'].value }}</mat-label>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="firstCalculation">
+                <th mat-header-cell *matHeaderCellDef> Ukupno </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-label>{{ getTotalTaxBih() }} KM</mat-label>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="secondCalculation">
+                <th mat-header-cell *matHeaderCellDef> Osnovica </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-label>{{ getDefaultTaxBih() }} KM</mat-label>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="returnTaxBih">
+                <th mat-header-cell *matHeaderCellDef> PDV </th>
+                <td mat-cell *matCellDef="let element">
+                  <mat-label>{{ taxReturnBih() }} KM</mat-label>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <ng-container matColumnDef="action">
+                <th mat-header-cell *matHeaderCellDef>
+                  <span class="ion-float-end">Akcija</span>
+                </th>
+                <td mat-cell *matCellDef="let element">
+                  <button
+                    [disabled]="!taxForm.valid"
+                    (click)="updateInvoiceTax()"
+                    [ngClass]="needUpdateTax ? 'btn btn-danger standard-button ion-float-end' : 'btn btn-outline-dark standard-button ion-float-end'"
+                  >{{ needUpdateTax ? 'Ažuriraj' : 'Potvrdi'}}</button>
+                </td>
+                <td mat-footer-cell *matFooterCellDef></td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="taxBihColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: taxBihColumns;"></tr>
+              <tr mat-footer-row *matFooterRowDef="taxBihColumns"></tr>
+            </div>
+          </table>
+        </div>
+
+      </mat-tab-nav-panel>
+    </div>
+  </div>
+
+  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button [disabled]="needUpdateExpenses || needUpdateTax" (click)="printInvoiceModal()">
+      <ion-icon color="light" size="large" name="print"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

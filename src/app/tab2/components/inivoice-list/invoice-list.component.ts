@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import {Component, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {
   ActionSheetController,
   AlertController,
@@ -26,11 +26,12 @@ import { ICommonResponse } from '@app/services/user.interface';
 import { UpdateInvoiceComponent } from '@app/tab2/components/update-invoice/update-invoice.component';
 
 @Component({
-  selector: 'app-bus-lines',
+  selector: 'app-invoice-list',
   templateUrl: './invoice-list.component.html',
   styleUrls: ['./invoice-list.component.scss'],
 })
 export class InvoiceListComponent implements OnInit, OnDestroy {
+  @Input() public showBackButton: boolean = true;
   @ViewChild(IonInfiniteScroll) infiniteScroll: IonInfiniteScroll;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public invoices: IInvoice[] = [];
@@ -99,7 +100,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
               this.handleInfinitiveLoader();
               this.loadingCtrl.dismiss();
             }),
-            takeUntil(this.componentDestroyed$),
+            take(1),
             catchError((err: Error) => {
               if (event) {
                 event.target.complete();
@@ -161,7 +162,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
 
               return throwError(error);
             }),
-            takeUntil(this.componentDestroyed$),
+            take(1),
           )
           .subscribe();
       })

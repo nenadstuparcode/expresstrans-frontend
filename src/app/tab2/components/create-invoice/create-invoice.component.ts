@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { filter, take, takeUntil, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { ICreateInvoiceResponse, IDriver, IVehicle } from '@app/tab2/tab2.interface';
 import { Subject, throwError } from 'rxjs';
@@ -9,7 +9,7 @@ import { InvoiceService } from '@app/tab2/invoice.service';
 import { DriverService } from '@app/tab2/driver.service';
 
 @Component({
-  selector: 'app-driver-create',
+  selector: 'app-invoice-create',
   templateUrl: './create-invoice.component.html',
   styleUrls: ['./create-invoice.component.scss'],
 })
@@ -35,7 +35,22 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
       invoiceDateStart: this.fb.control('', Validators.required),
       invoiceDateReturn: this.fb.control('', Validators.required),
       invoiceVehicle: this.fb.control('', Validators.required),
+      invoiceExpCro: this.fb.control(0, Validators.required),
+      invoiceExpSlo: this.fb.control(0, Validators.required),
+      invoiceExpAus: this.fb.control(0, Validators.required),
+      invoiceExpGer: this.fb.control(0, Validators.required),
+      invoiceInitialExpenses: this.fb.control(0, Validators.required),
+      invoiceInitialExpensesDesc: this.fb.control(''),
+      invoiceUnexpectedExpenses: this.fb.control(0, Validators.required),
+      invoiceUnexpectedExpensesDesc: this.fb.control(''),
+      totalKilometers: this.fb.control(0, Validators.required),
+      bihKilometers: this.fb.control(0, Validators.required),
+      diffKilometers: this.fb.control(0, Validators.required),
+      firstCalculation: this.fb.control(0, Validators.required),
+      secondCalculation: this.fb.control(0, Validators.required),
+      returnTaxBih: this.fb.control(0, Validators.required),
       invoiceDrivers: this.fb.array([], Validators.required),
+      invoiceTotalBill: this.fb.control(0, Validators.required),
     });
 
     this.driverForm = this.fb.group({
@@ -60,7 +75,7 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
       .pipe(
         filter((data: IDriver[]) => !!data),
         tap((data: IDriver[]) => (this.availableDrivers = data)),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }
@@ -71,7 +86,7 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
       .pipe(
         filter((data: IVehicle[]) => !!data),
         tap((data: IVehicle[]) => (this.availableVehicles = data)),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }
@@ -115,7 +130,6 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
               this.loadingCtrl.dismiss();
               this.modalCtrl.dismiss(data.data, 'save');
             }),
-            takeUntil(this.componentDestroyed$),
           )
           .subscribe();
       })

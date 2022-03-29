@@ -3,7 +3,7 @@ import { ActionSheetController, AlertController, ModalController, ToastControlle
 import { CreateDriverComponent } from '@app/tab2/components/create-driver/create-driver.component';
 import { UpdateDriverComponent } from '@app/tab2/components/update-driver/update-driver.component';
 import { DriverService } from '@app/tab2/driver.service';
-import { filter, take, takeUntil, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { IDriver, IVehicle } from '@app/tab2/tab2.interface';
 import { Subject } from 'rxjs';
 import { CreateVehicleComponent } from '@app/tab2/components/create-vehicle/create-vehicle.component';
@@ -44,7 +44,7 @@ export class DriverListComponent implements OnInit {
       .pipe(
         filter((data: IDriver[]) => !!data),
         tap((data: IDriver[]) => (this.drivers = data)),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }
@@ -55,7 +55,7 @@ export class DriverListComponent implements OnInit {
       .pipe(
         filter((data: IVehicle[]) => !!data),
         tap((data: IVehicle[]) => (this.vehicles = data)),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }
@@ -262,7 +262,7 @@ export class DriverListComponent implements OnInit {
           this.presentToast('Vozilo je obrisano');
           this.vehicles = [...this.vehicles.filter((vehicle: IVehicle) => vehicle._id !== vehicleId)];
         }),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }

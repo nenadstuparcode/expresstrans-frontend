@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { ICommonResponse } from '@app/services/user.interface';
-import { catchError, filter, pluck } from 'rxjs/operators';
+import { map, pluck} from 'rxjs/operators';
 import { IBusLine, ICreateBusLinePayload, ICreateBusLineResponse } from '@app/tab2/tab2.interface';
 import { environment } from '@env/environment';
 
@@ -16,32 +16,29 @@ export class BusLineService {
   public createBusLine(payload: ICreateBusLinePayload): Observable<ICommonResponse<ICreateBusLineResponse>> {
     return this.http
       .post(`${environment.apiUrl}/busLine`, payload)
-      .pipe(filter((data: ICommonResponse<ICreateBusLineResponse>) => !!data));
+      .pipe(map((data: ICommonResponse<ICreateBusLineResponse>) => { return data }));
   }
 
   public getBusLines(): Observable<IBusLine[]> {
     return this.http.get(`${environment.apiUrl}/busLine`).pipe(
-      filter((data: ICommonResponse<IBusLine[]>) => !!data),
       pluck('data'),
-      catchError((error: Error) => throwError(error)),
     );
   }
 
   public getBusLine(id: string): Observable<ICommonResponse<IBusLine>> {
     return this.http
       .get(`${environment.apiUrl}/busLine/${id}`)
-      .pipe(filter((data: ICommonResponse<IBusLine>) => !!data));
+      .pipe(map((data: ICommonResponse<IBusLine>) => { return data }));
   }
 
   public updateBusLine(payload: ICreateBusLinePayload, id: string): Observable<ICommonResponse<IBusLine>> {
     return this.http
       .put(`${environment.apiUrl}/busLine/${id}`, payload)
-      .pipe(filter((data: ICommonResponse<IBusLine>) => !!data));
+      .pipe(map((data: ICommonResponse<IBusLine>) => { return data }));
   }
 
   public deleteBusLine(id: string): Observable<IBusLine> {
     return this.http.delete(`${environment.apiUrl}/busLine/${id}`).pipe(
-      filter((data: ICommonResponse<IBusLine>) => !!data),
       pluck('data'),
     );
   }
@@ -53,6 +50,6 @@ export class BusLineService {
   }): Observable<ICommonResponse<IBusLine[]>> {
     return this.http
       .post(`${environment.apiUrl}/busLine/search`, payload)
-      .pipe(filter((data: ICommonResponse<IBusLine[]>) => !!data));
+      .pipe(map((data: ICommonResponse<IBusLine[]>) => { return data }));
   }
 }

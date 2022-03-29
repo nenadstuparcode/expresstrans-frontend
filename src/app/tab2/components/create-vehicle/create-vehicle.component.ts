@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { filter, take, takeUntil, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { ICreateVehicleResponse } from '@app/tab2/tab2.interface';
 import { Subject, throwError } from 'rxjs';
@@ -45,7 +45,6 @@ export class CreateVehicleComponent implements OnInit, OnDestroy {
               this.loadingCtrl.dismiss();
               this.modalCtrl.dismiss(data.data, 'save');
             }),
-            takeUntil(this.componentDestroyed$),
           )
           .subscribe();
       })

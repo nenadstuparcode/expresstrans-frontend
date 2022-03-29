@@ -13,7 +13,7 @@ import {
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { DateAdapter } from '@angular/material/core';
 import { TicketService } from '@app/tab1/ticket.service';
-import { filter, finalize, map, startWith, takeUntil, tap } from 'rxjs/operators';
+import {filter, finalize, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
@@ -84,7 +84,7 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
             },
           };
         }),
-        takeUntil(this.componentDestroyed$),
+        take(1),
       )
       .subscribe();
   }
@@ -285,7 +285,7 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.presentToast('Karta uspjesno ažurirana.');
                 this.dismissModal('dismiss');
               }),
-              takeUntil(this.componentDestroyed$),
+              take(1),
             )
             .subscribe();
         })

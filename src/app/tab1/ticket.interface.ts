@@ -23,6 +23,7 @@ export interface ICreateTicketPayload {
 }
 
 export interface ICreateTicketResponse {
+  _id: string;
   id: string;
   ticketOnName: string;
   ticketPhone: string;
@@ -68,4 +69,6 @@ export interface ITicket {
   taxCalculatedTwo?: number;
   returnTaxDE?: number;
   ticketIdToShow?: string;
+  month?: string;
+  year?: string;
 }

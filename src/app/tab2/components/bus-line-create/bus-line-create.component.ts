@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { filter, take, takeUntil, tap } from 'rxjs/operators';
+import { filter, take, tap } from 'rxjs/operators';
 import { Subject, throwError } from 'rxjs';
 import {
   LoadingController,
@@ -114,7 +114,6 @@ export class BusLineCreateComponent implements OnInit, OnDestroy {
               this.loadingCtrl.dismiss();
               this.modalCtrl.dismiss(data.data, 'save');
             }),
-            takeUntil(this.componentDestroyed$),
           )
           .subscribe();
       })

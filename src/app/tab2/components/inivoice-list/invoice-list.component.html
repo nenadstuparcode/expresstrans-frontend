@@ -1,6 +1,6 @@
 <ion-header translucent>
   <ion-toolbar>
-    <ion-buttons slot="start">
+    <ion-buttons slot="start" *ngIf="showBackButton">
       <ion-button routerLink="/konfiguracija">Nazad</ion-button>
     </ion-buttons>
     <ion-title>{{ config.description }}</ion-title>

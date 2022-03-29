@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { Tab1Page } from './tab1.page';
 import { TicketsListComponent } from '@app/tab1/components/tickets-list/tickets-list.page';
 import { AuthGuard } from '@app/services/auth-guard';
+import { TicketTableComponent } from '@app/tab1/components/ticket-table/ticket-table.component';
 
 const routes: Routes = [
   {
@@ -21,9 +22,13 @@ const routes: Routes = [
         component: TicketsListComponent,
         canActivate: [AuthGuard],
       },
+      {
+        path: 'faktura',
+        component: TicketTableComponent,
+        canActivate: [AuthGuard],
+      },
     ],
   },
-
 ];
 
 @NgModule({
