@@ -13,7 +13,7 @@ import {
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { DateAdapter } from '@angular/material/core';
 import { TicketService } from '@app/tab1/ticket.service';
-import {filter, finalize, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
+import {filter, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
@@ -120,8 +120,8 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
           this.selectedInvoiceNumber = this.ticketData.ticketInvoiceNumber;
           this.editTicketForm = this.fb.group({
             ticketOnName: this.fb.control(this.ticketData.ticketOnName, Validators.required),
-            ticketPhone: this.fb.control(this.ticketData.ticketPhone, Validators.required),
-            ticketEmail: this.fb.control(this.ticketData.ticketEmail, Validators.required),
+            ticketPhone: this.fb.control(this.ticketData.ticketPhone),
+            ticketEmail: this.fb.control(this.ticketData.ticketEmail),
             ticketNote: this.fb.control(this.ticketData.ticketNote),
             ticketValid: this.fb.control(this.ticketData.ticketValid, Validators.required),
             ticketBusLineId: this.fb.control(this.ticketData.ticketBusLineId, Validators.required),
@@ -280,10 +280,10 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
           this.ticketService
             .updateTicket(this.editTicketForm.value, this.ticketData._id)
             .pipe(
-              finalize(() => {
+              tap((data: ICommonResponse<ITicket>) => {
                 this.loadingCtrl.dismiss();
                 this.presentToast('Karta uspjesno ažurirana.');
-                this.dismissModal('dismiss');
+                this.modalController.dismiss(data.data, 'save');
               }),
               take(1),
             )

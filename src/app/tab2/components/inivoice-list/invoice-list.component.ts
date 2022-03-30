@@ -201,7 +201,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
 
     modal.onDidDismiss().then((data: any) => {
       if (data.role === 'save') {
-        const newInvoice: IInvoice = data.data;
+        const newInvoice: IInvoice = { ...data.data, driversArray: data.data.invoiceDrivers.map((driver: any) => driver.name).join(', ')};
         this.invoices.unshift(newInvoice);
       }
     });
@@ -217,15 +217,11 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
       },
     });
 
-    modal.onDidDismiss().then((res: any) => {
-      if (res.role === 'update') {
-        const newInvoice: IInvoice = res.data;
-        const invoiceInList: IInvoice = this.invoices.find((inv: IInvoice) => inv._id === newInvoice._id);
-
-        invoiceInList.invoiceDateStart = newInvoice.invoiceDateStart;
-        invoiceInList.invoiceDateReturn = newInvoice.invoiceDateReturn;
-        invoiceInList.invoiceDrivers = newInvoice.invoiceDrivers;
-        invoiceInList.invoiceVehicle = newInvoice.invoiceVehicle;
+    modal.onDidDismiss().then((data: any) => {
+      if (data.role === 'save') {
+        const newInvoice: IInvoice = { ...data.data, driversArray: data.data.invoiceDrivers.map((driver: any) => driver.name).join(', ')};
+        this.invoices = this.invoices.filter((inv: IInvoice) => inv._id !== invoice._id);
+        this.invoices.unshift(newInvoice);
       }
     });
 

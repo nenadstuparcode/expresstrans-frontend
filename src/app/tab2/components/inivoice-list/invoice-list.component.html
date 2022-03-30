@@ -23,7 +23,12 @@
       </ion-col>
     </ion-row>
     <ion-row>
-      <ion-col size-md="6" offset-md="3">
+      <ng-template #noInvoices>
+        <ion-col size-md="6" offset-md="3" class="ion-text-center">
+          <h3>Nema faktura..</h3>
+        </ion-col>
+      </ng-template>
+      <ion-col size-md="6" offset-md="3" *ngIf="invoices.length; else noInvoices">
         <div class="invoice-outline">
           <ion-card class="invoice" *ngFor="let invoice of invoices">
             <ion-grid>

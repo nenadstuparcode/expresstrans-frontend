@@ -7,27 +7,28 @@ import {
   ToastController,
 } from '@ionic/angular';
 import { BusLineService } from '@app/tab2/bus-line.service';
-import { catchError, filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
+import {catchError, filter, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
 import { Observable, Subject, throwError } from 'rxjs';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DateAdapter } from '@angular/material/core';
-import { TicketService } from '@app/tab1/ticket.service';
 import { ICommonResponse } from '@app/services/user.interface';
-import { ICreateTicketResponse, TicketType } from '@app/tab1/ticket.interface';
+import { TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
 import { DatetimeModalComponent } from '@app/tab1/components/datetime-modal/datetime-modal.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ReservationService } from '@app/tab4/tab4.service';
+import { IReservation } from '@app/tab4/tab4.interface';
 
 @Component({
-  selector: 'app-create-ticket',
-  templateUrl: './create-ticket.component.html',
-  styleUrls: ['./create-ticket.component.scss'],
+  selector: 'app-create-reservation',
+  templateUrl: './create-reservation.component.html',
+  styleUrls: ['./create-reservation.component.scss'],
 })
-export class CreateTicketComponent implements OnInit, OnDestroy {
+export class CreateReservationComponent implements OnInit, OnDestroy {
   @ViewChild(MatDatepicker) datepicker: MatDatepicker<Date>;
-  public createTicketForm: FormGroup;
+  public createReservationForm: FormGroup;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public minDate: Date;
   public columnOptions: PickerColumnOption[] = [];
@@ -45,7 +46,7 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     private busLineService: BusLineService,
     private fb: FormBuilder,
     private dateAdapter: DateAdapter<Date>,
-    private ticketService: TicketService,
+    private reservationService: ReservationService,
     private loadingCtrl: LoadingController,
     private toastCtrl: ToastController,
     private invoiceService: InvoiceService,
@@ -91,46 +92,22 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
         ),
         tap((data: PickerColumnOption[]) => {
           this.columnOptions = data;
-          this.createTicketForm = this.fb.group({
-            ticketOnName: this.fb.control('', Validators.required),
-            ticketPhone: this.fb.control(''),
-            ticketEmail: this.fb.control(''),
-            ticketNote: this.fb.control(''),
-            ticketType: this.fb.control('classic', Validators.required),
-            ticketValid: this.fb.control('6', Validators.required),
+          this.createReservationForm = this.fb.group({
+            reservationOnName: this.fb.control('', Validators.required),
+            reservationPhone: this.fb.control('', Validators.required),
+            reservationDate: this.fb.control('', Validators.required),
+            reservationTime: this.fb.control('', Validators.required),
             ticketBusLineId: this.fb.control('', Validators.required),
-            ticketRoundTrip: this.fb.control(false, Validators.required),
-            ticketStartDate: this.fb.control('', Validators.required),
-            ticketStartTime: this.fb.control('', Validators.required),
-            ticketInvoiceNumber: this.fb.control('', Validators.required),
-            ticketClassicId: this.fb.control(''),
-            ticketPrice: this.fb.control(0, Validators.required),
+            reservationNote: this.fb.control(''),
           });
         }),
         tap(() => {
-          this.filteredBuslines = this.createTicketForm.controls.ticketBusLineId.valueChanges.pipe(
+          this.filteredBuslines = this.createReservationForm.controls.ticketBusLineId.valueChanges.pipe(
             startWith(''),
             map((value: any) => (typeof value === 'string' ? value : value.lineCityStart)),
             map((name: string) => (name ? this._filter(name) : this.busLines.slice())),
           );
         }),
-        tap(() => this.watchTicketPrice()),
-      )
-      .subscribe();
-  }
-
-  public watchTicketPrice(): void {
-    this.createTicketForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(data, this.createTicketForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.createTicketForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
       )
       .subscribe();
   }
@@ -154,23 +131,6 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     return this.busLines.filter((option: IBusLine) => option.lineCityStart.toLowerCase().includes(filterValue));
   }
 
-  public get createTicketType(): TicketType {
-    return this.createTicketForm.controls.ticketType.value;
-  }
-
-  public setTicketPrice(buslineId: string, roundTrip: boolean): void {
-    const busLine: IBusLine = this.busLines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine && this.createTicketForm.controls.ticketType.value !== 'return') {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    this.createTicketForm.controls.ticketPrice.setValue(price);
-  }
-
   public dismissModal(role: string): void {
     this.modalController
       .dismiss(
@@ -183,11 +143,11 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
   }
 
   public setDate(date: string): void {
-    this.createTicketForm.controls.ticketStartDate.setValue(date);
+    this.createReservationForm.controls.reservationDate.setValue(date);
   }
 
   public setTime(time: string): void {
-    this.createTicketForm.controls.ticketStartTime.setValue(time);
+    this.createReservationForm.controls.reservationTime.setValue(time);
   }
 
   public openDateModal(type: 'date' | 'time'): void {
@@ -207,20 +167,10 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
       });
   }
 
-  public handleBusLine(selectedLine: any): void {
-    this.pickedOption = selectedLine;
-    this.availableDays = selectedLine.linija.value.lineArray.map((line: any) => line.day);
-    this.daysForLine = selectedLine.linija.value.lineArray;
-
-    this.createTicketForm.controls.ticketBusLineId.setValue(selectedLine.linija.value._id);
-    this.createTicketForm.controls.ticketStartDate.setValue('');
-    this.createTicketForm.controls.ticketStartTime.setValue('');
-  }
-
   public async presentToast(msg: string): Promise<void> {
     const toast: HTMLIonToastElement = await this.toastCtrl.create({
       message: msg,
-      duration: 2500,
+      duration: 2000,
       color: 'primary',
     });
 
@@ -238,20 +188,19 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     });
   }
 
-  public createTicket(): void {
-    this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, this.createTicketForm.controls.ticketRoundTrip.value)
-    if (this.createTicketForm.valid) {
+  public createReservation(): void {
+    if (this.createReservationForm.valid) {
       this.presentLoading('Kreiranje karte...')
         .then(() => {
-          this.ticketService
-            .createTicket(this.createTicketForm.value)
+          this.reservationService
+            .createReservation(this.createReservationForm.value)
             .pipe(
-              tap((res: ICommonResponse<ICreateTicketResponse>) => {
+              tap((res: ICommonResponse<IReservation>) => {
                 this.loadingCtrl.dismiss();
-                this.presentToast('Karta uspjesno kreirana.');
+                this.presentToast('Rezervacija uspjesno kreirana.');
                 this.modalController.dismiss(res.data, 'save');
               }),
-              takeUntil(this.componentDestroyed$),
+              take(1),
               catchError((error: Error) => {
                 this.loadingCtrl.dismiss();
 

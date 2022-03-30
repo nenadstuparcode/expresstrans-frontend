@@ -1,0 +1,53 @@
+.mat-form-field {
+  display: block;
+  position: relative;
+}
+.date-container {
+  position: relative;
+}
+
+.select-date {
+  position: absolute;
+  top:50%;
+  right: 20px;
+  transform: translateY(-90%);
+}
+
+ion-select {
+  width: 100%;
+  & .sc-ion-alert-md-h {
+    --min-width: 350px;
+  }
+  justify-content: center;
+}
+
+.ticket-invoice-number {
+  font-size: 10px !important;
+}
+
+:root {
+  --ion-safe-area-top: 20px;
+  --ion-safe-area-bottom: 22px;
+}
+
+ion-content {
+  --background: transparent;
+}
+
+ion-datetime {
+  height: auto;
+  width: auto;
+
+  max-width: 350px;
+}
+
+.ion-modal {
+  --width: 290px;
+  --height: 382px;
+  --border-radius: 8px;
+}
+
+ion-modal ion-datetime {
+  height: 382px;
+}
+

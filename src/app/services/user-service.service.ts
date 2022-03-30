@@ -3,7 +3,7 @@ import { BehaviorSubject, EMPTY, Observable } from 'rxjs';
 import { ICommonResponse, IResponse, IUser, IUserLoginResponse, IUserRegister } from '@app/services/user.interface';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { finalize, map, tap } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { environment } from '@env/environment';
 
 @Injectable({
@@ -59,9 +59,6 @@ export class UserServiceService {
       })
       .pipe(
         map((data: ICommonResponse<IUser>) => data.data),
-        finalize(() => {
-          this.router.navigate(['/otp']);
-        }),
       );
   }
 

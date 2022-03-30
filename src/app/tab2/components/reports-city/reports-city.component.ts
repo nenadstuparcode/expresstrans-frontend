@@ -33,6 +33,7 @@ export interface ITableData {
   taxCalculatedOne: number;
   taxCalculatedTwo: number;
   taxDeTotal: number;
+  toShow?: boolean;
 }
 
 export interface IGeneral {
@@ -47,6 +48,7 @@ export interface IGeneral {
   taxCalculatedTwo?: number;
   taxDeTotal?: number;
   totalPassengers?: number;
+  toShow?: boolean;
 }
 
 export interface ITotals {
@@ -416,6 +418,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
       selectedCity.tranzitTotal = this.calculateTotalTranzit(this.getCityTickets(selectedCity.name));
       selectedCity.kmTotal = this.calculateTotalKilometers(this.getCityTickets(selectedCity.name));
       selectedCity.priceTotal = this.calculateTotalPrice(this.getCityTickets(selectedCity.name));
+      selectedCity.toShow = this.calculateTotalPrice(this.getCityTickets(selectedCity.name)) > 0;
       selectedCity.taxCalculatedOne = this.calculateTotalTaxOne(this.getCityTickets(selectedCity.name));
       selectedCity.taxCalculatedTwo = this.calculateTotalTaxTwo(this.getCityTickets(selectedCity.name));
       selectedCity.taxDeTotal = this.calculateTotalTax(this.getCityTickets(selectedCity.name));

@@ -21,7 +21,8 @@ ion-avatar {
 }
 
 .mat-table-container {
-  margin: 20px 0;
+  margin: 20px;
+  overflow-x: scroll;
 }
 
 .add-icon {
@@ -56,9 +57,24 @@ td.mat-cell {
   padding-top:5px;
   width: 130px;
 }
+.width-180 {
+  padding-top:5px;
+  width: 130px;
+}
+
+.autocomplete-option {
+  font-size: 10px;
+  padding: 5px 10px;
+  min-height: 20px;
+  height: 15px;
+}
+.mat-tab-link {
+  height: 70px;
+}
 .total-price {
   font-weight: bold;
   display: flex;
+  margin-right: 20px;
   justify-content: flex-end;
   & span {
     border: 2px dotted black;
@@ -93,6 +109,12 @@ tr.mat-row, tr.mat-footer-row, tr.mat-header-row {
   display: flex;
   flex-direction: column;
   align-items: center;
+  &-drivers {
+    padding: 10px;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+  }
   &-headline {
     font-size: 16px;
     font-weight: bold;
@@ -102,6 +124,7 @@ tr.mat-row, tr.mat-footer-row, tr.mat-header-row {
   }
   &-nr {
     display: block;
+    font-weight: bold;
   }
   &-period {
     display: block;

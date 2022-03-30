@@ -12,7 +12,11 @@
            [active]="activeLink === invoice.invoiceNumber">
           <div class="invoice">
             <span class="invoice-nr">{{invoice.invoiceNumber}}</span>
-            <span class="invoice-period">{{invoice.invoiceDateStart | date: "dd MMM YY"}} - {{invoice.invoiceDateReturn | date: "dd MMM YY"}}</span>
+            <span class="invoice-period">
+              {{invoice.invoiceDateStart | date: "dd-MMM/YY"}} - {{invoice.invoiceDateReturn | date: "dd-MMM/YY"}}
+            </span>
+            <span class="invoice-period">{{getDayName(invoice.invoiceDateStart)}} - {{getDayName(invoice.invoiceDateReturn)}}</span>
+            <span class="invoice-period">Vozači: {{invoice.driversArray}}</span>
           </div>
         </a>
         <a mat-tab-link (click)="loadMoreInvoices()">Učitaj</a>
@@ -137,7 +141,7 @@
                   {{ element.busLineData.lineCityStart }} - {{ element.busLineData.lineCityEnd }}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>
-                  <mat-form-field class="width-130" appearance="legacy">
+                  <mat-form-field class="width-180" appearance="legacy">
                     <mat-label>Linija</mat-label>
                     <input type="text"
                            placeholder="Izaberi liniju"
@@ -145,7 +149,7 @@
                            formControlName="ticketBusLineId"
                            [matAutocomplete]="auto">
                     <mat-autocomplete [displayWith]="displayFnBih" autoActiveFirstOption #auto="matAutocomplete">
-                      <mat-option *ngFor="let busline of filteredBuslinesBih | async"  [value]="busline._id">
+                      <mat-option class="autocomplete-option" *ngFor="let busline of filteredBuslinesBih | async"  [value]="busline._id">
                         {{busline.lineCityStart}} - {{busline.lineCityEnd}}
                       </mat-option>
                     </mat-autocomplete>
@@ -314,7 +318,7 @@
                   {{ element.busLineData.lineCityStart }} - {{ element.busLineData.lineCityEnd }}
                 </td>
                 <td mat-footer-cell *matFooterCellDef>
-                  <mat-form-field class="width-130" appearance="legacy">
+                  <mat-form-field class="width-180" appearance="legacy">
                     <mat-label>Linija</mat-label>
                     <input type="text"
                            placeholder="Izaberi liniju"
@@ -322,7 +326,7 @@
                            formControlName="ticketBusLineId"
                            [matAutocomplete]="auto">
                     <mat-autocomplete [displayWith]="displayFnDe" autoActiveFirstOption #auto="matAutocomplete">
-                      <mat-option *ngFor="let busline of filteredBuslinesDe | async"  [value]="busline._id">
+                      <mat-option class="autocomplete-option" *ngFor="let busline of filteredBuslinesDe | async"  [value]="busline._id">
                         {{busline.lineCityStart}} - {{busline.lineCityEnd}}
                       </mat-option>
                     </mat-autocomplete>

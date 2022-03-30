@@ -122,7 +122,7 @@ export class UpdateInvoiceComponent implements OnInit, OnDestroy {
             filter((data: ICommonResponse<ICreateInvoiceResponse>) => !!data && this.updateInvoiceForm.valid),
             tap((data: ICommonResponse<ICreateInvoiceResponse>) => {
               this.loadingCtrl.dismiss();
-              this.modalCtrl.dismiss(data.data, 'update');
+              this.modalCtrl.dismiss(data.data, 'save');
             }),
           )
           .subscribe();

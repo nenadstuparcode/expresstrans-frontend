@@ -9,7 +9,13 @@
         <ion-searchbar formControlName="searchTerm" placeholder="Pretraži"></ion-searchbar>
       </ion-col>
 
-      <ion-col size-md="6" offset-md="3" *ngIf="tickets?.length">
+      <ng-template #noTickets>
+        <ion-col size-md="6" offset-md="3" class="ion-text-center">
+          <h3>Nema karata..</h3>
+        </ion-col>
+      </ng-template>
+
+      <ion-col size-md="6" offset-md="3" *ngIf="tickets?.length; else noTickets">
         <ion-card *ngFor="let ticket of tickets" class="ticket">
           <ion-grid>
             <ion-row>

@@ -1,0 +1,65 @@
+<ion-header translucent>
+  <ion-toolbar color="primary">
+    <ion-title>Kreiraj Rezervaciju</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal('dismiss')">Odustani</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ng-template #loading>
+    <div class="loading-container">
+      <ion-spinner color="primary" name="crescent"></ion-spinner>
+    </div>
+  </ng-template>
+  <ng-container *ngIf="createReservationForm; else loading">
+    <ion-list class="ion-no-margin" [formGroup]="createReservationForm">
+
+      <ion-item>
+        <ion-label position="stacked">Ime Putnika</ion-label>
+        <ion-input formControlName="reservationOnName" placeholder="Ime Prezime" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Broj Telefona</ion-label>
+        <ion-input formControlName="reservationPhone" placeholder="+38765111333" type="text"></ion-input>
+      </ion-item>
+
+      <ion-item>
+        <ion-label position="stacked">Napomena</ion-label>
+        <ion-textarea formControlName="reservationNote" placeholder="Unesite Napomenu"></ion-textarea>
+      </ion-item>
+
+      <mat-form-field class="example-full-width" appearance="fill">
+        <mat-label>Linija</mat-label>
+        <input type="text"
+               placeholder="Izaberi liniju"
+               matInput
+               formControlName="ticketBusLineId"
+               [matAutocomplete]="auto">
+        <mat-autocomplete [displayWith]="displayFn" autoActiveFirstOption #auto="matAutocomplete">
+          <mat-option *ngFor="let busline of filteredBuslines | async"  [value]="busline._id">
+            {{busline.lineCityStart}} - {{busline.lineCityEnd}}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+
+      <ion-item>
+        <ion-input readonly="true" placeholder="Unesi Datum" [value]="createReservationForm.controls.reservationDate.value | date: 'dd/MM/YY'"></ion-input>
+        <ion-button slot="end" (click)="openDateModal('date')">Datum</ion-button>
+      </ion-item>
+
+      <ion-item>
+        <ion-input readonly="true" placeholder="Unesi Vrijeme" [value]="createReservationForm.controls.reservationTime.value | date: 'HH:mm'"></ion-input>
+        <ion-button slot="end" (click)="openDateModal('time')">Vrijeme</ion-button>
+      </ion-item>
+
+    </ion-list>
+
+    <ion-button [disabled]="!createReservationForm.valid" (click)="createReservation()" class="submit-ticket ion-no-margin" size="large" expand="full" color="primary">Kreiraj
+      <ion-icon name="checkmark-outline" size="large"></ion-icon>
+    </ion-button>
+  </ng-container>
+
+</ion-content>
+

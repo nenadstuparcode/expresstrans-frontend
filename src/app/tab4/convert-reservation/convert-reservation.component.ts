@@ -1,11 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import {
-  LoadingController,
-  ModalController,
-  PickerColumnOption,
-  PickerController,
-  ToastController,
-} from '@ionic/angular';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { LoadingController, ModalController, PickerController, ToastController } from '@ionic/angular';
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { catchError, filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
 import { Observable, Subject, throwError } from 'rxjs';
@@ -19,18 +13,19 @@ import { ICreateTicketResponse, TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
 import { DatetimeModalComponent } from '@app/tab1/components/datetime-modal/datetime-modal.component';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { IReservation } from '@app/tab4/tab4.interface';
 
 @Component({
-  selector: 'app-create-ticket',
-  templateUrl: './create-ticket.component.html',
-  styleUrls: ['./create-ticket.component.scss'],
+  selector: 'app-convert-reservation',
+  templateUrl: './convert-reservation.component.html',
+  styleUrls: ['./convert-reservation.component.scss'],
 })
-export class CreateTicketComponent implements OnInit, OnDestroy {
+export class ConvertReservationComponent implements OnInit, OnDestroy {
   @ViewChild(MatDatepicker) datepicker: MatDatepicker<Date>;
+  @Input() public reservation: IReservation;
   public createTicketForm: FormGroup;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public minDate: Date;
-  public columnOptions: PickerColumnOption[] = [];
   public pickedOption: any;
   public availableDays: number[] = [];
   public daysForLine: any[] = [];
@@ -89,19 +84,18 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
             value: line,
           })),
         ),
-        tap((data: PickerColumnOption[]) => {
-          this.columnOptions = data;
+        tap(() => {
           this.createTicketForm = this.fb.group({
-            ticketOnName: this.fb.control('', Validators.required),
-            ticketPhone: this.fb.control(''),
+            ticketOnName: this.fb.control(this.reservation.reservationOnName, Validators.required),
+            ticketPhone: this.fb.control(this.reservation.reservationPhone, Validators.required),
             ticketEmail: this.fb.control(''),
-            ticketNote: this.fb.control(''),
+            ticketNote: this.fb.control(this.reservation.reservationNote ? this.reservation.reservationNote : ''),
             ticketType: this.fb.control('classic', Validators.required),
             ticketValid: this.fb.control('6', Validators.required),
-            ticketBusLineId: this.fb.control('', Validators.required),
+            ticketBusLineId: this.fb.control(this.reservation.ticketBusLineId, Validators.required),
             ticketRoundTrip: this.fb.control(false, Validators.required),
-            ticketStartDate: this.fb.control('', Validators.required),
-            ticketStartTime: this.fb.control('', Validators.required),
+            ticketStartDate: this.fb.control(this.reservation.reservationDate, Validators.required),
+            ticketStartTime: this.fb.control(this.reservation.reservationTime, Validators.required),
             ticketInvoiceNumber: this.fb.control('', Validators.required),
             ticketClassicId: this.fb.control(''),
             ticketPrice: this.fb.control(0, Validators.required),
@@ -162,7 +156,7 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     const busLine: IBusLine = this.busLines.find((line: IBusLine) => line._id === buslineId);
     let price: number;
 
-    if (busLine && this.createTicketForm.controls.ticketType.value !== 'return') {
+    if (busLine) {
       price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
     } else {
       price = 0;
@@ -239,7 +233,8 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
   }
 
   public createTicket(): void {
-    this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, this.createTicketForm.controls.ticketRoundTrip.value)
+    this.setTicketPrice(this.reservation.ticketBusLineId, this.createTicketForm.controls.ticketRoundTrip.value);
+
     if (this.createTicketForm.valid) {
       this.presentLoading('Kreiranje karte...')
         .then(() => {

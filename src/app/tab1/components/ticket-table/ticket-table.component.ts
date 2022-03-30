@@ -12,7 +12,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
-import { IBusLine, IInvoice, IPrintInvoiceTaxPayload } from '@app/tab2/tab2.interface';
+import {IBusLine, IDriver, IInvoice, IPrintInvoiceTaxPayload} from '@app/tab2/tab2.interface';
 import { TicketService } from '@app/tab1/ticket.service';
 import { ICreateTicketResponse, ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { combineLatest, Observable, Subject, throwError } from 'rxjs';
@@ -80,6 +80,16 @@ export class TicketTableComponent implements OnInit, OnDestroy {
     'secondCalculation',
     'returnTaxBih',
     'action',
+  ];
+
+  public daynames: string[] = [
+    'Nedelja',
+    'Ponedeljak',
+    'Utorak',
+    'Srijeda',
+    'Četvrtak',
+    'Petak',
+    'Subota',
   ];
 
   public active: number = 1;
@@ -164,7 +174,12 @@ export class TicketTableComponent implements OnInit, OnDestroy {
         ])
           .pipe(
             map(([data, buslines]: [ICommonResponse<IInvoice[]>, IBusLine[]]) => {
-              this.invoices = data.data;
+              this.invoices = data.data.map((inv: IInvoice) => {
+                return {
+                  ...inv,
+                  driversArray: inv.invoiceDrivers.map((driver: IDriver) => driver.name).join(','),
+                }
+              })
               this.buslines = buslines;
               this.buslinesDe = buslines.filter((bus: IBusLine) => bus.lineCountryStart === 'de');
               this.buslinesBih = buslines.filter((bus: IBusLine) => bus.lineCountryStart === 'bih');
@@ -254,6 +269,10 @@ export class TicketTableComponent implements OnInit, OnDestroy {
 
         return throwError(error);
       });
+  }
+
+  public getDayName(date: string): string {
+    return this.daynames[new Date(date).getDay()];
   }
 
   public listenTaxForm(): void {

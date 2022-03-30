@@ -377,6 +377,17 @@ export class TicketsListComponent implements OnInit, OnDestroy {
       },
     });
 
+    modal.onDidDismiss().then((data: any) => {
+      if (data.role === 'save') {
+        const newTicket: ITicket = {
+          ...data.data,
+          busLineData: this.getBusLineData(data.data.ticketBusLineId),
+        };
+        this.tickets = this.tickets.filter((tick: ITicket) => tick._id !== ticket._id);
+        this.tickets.unshift(newTicket);
+      }
+    });
+
     return await modal.present();
   }
 
