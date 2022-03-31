@@ -36,6 +36,7 @@ export class ReservationsComponent implements OnInit {
   public filteredBuslines: Observable<IBusLine[]>;
 
   public campaignOne: FormGroup;
+  public currentYear: number;
 
   public months: any[] = [
     {
@@ -88,6 +89,8 @@ export class ReservationsComponent implements OnInit {
     },
   ];
 
+  public monthsToShow: any[] = [];
+
   public buslines: IBusLine[] = [];
   public activeLink: number;
   constructor(
@@ -104,12 +107,44 @@ export class ReservationsComponent implements OnInit {
     this.getData();
   }
 
-  public goToMonth(month: number): void {
+  public generateMonths(currentMonth: number, year: number): void {
+    const monthsToShow: any[] = [];
+
+    this.months.forEach((month: any) => {
+      if (month.code >= currentMonth && month.code <= 11) {
+        monthsToShow.push({...month, year: year});
+      }
+    });
+
+    this.months.forEach((month: any) => {
+      if (month.code < currentMonth && month.code <= 11) {
+        monthsToShow.push({...month, year: year + 1})
+      }
+    });
+
+    this.monthsToShow = [...monthsToShow];
+  }
+
+  public loadPrevious(year: number): void {
     const today: Date = new Date();
-    const year: number = today.getFullYear();
-    this.campaignOne.controls.start.setValue(new Date(year, month, 1).toISOString());
-    this.campaignOne.controls.end.setValue(new Date(year, month + 1, 1).toISOString());
+    const month: number = today.getMonth();
+    this.generateMonths(month, year - 1);
+    this.goToMonth(month, year - 1);
+  }
+
+  public loadNext(year: number): void {
+    const today: Date = new Date();
+    const month: number = today.getMonth();
+    this.generateMonths(month, year + 1);
+    this.goToMonth(month, year + 1);
+  }
+
+  public goToMonth(month: number, yearToGo: number): void {
+    this.campaignOne.controls.start.setValue(new Date(yearToGo, month, 1).toISOString());
+    this.campaignOne.controls.end.setValue(new Date(yearToGo, month + 1, 1).toISOString());
     this.activeLink = month;
+    this.currentYear = yearToGo;
+    this.reservationForm.controls.reservationDate.setValue(new Date(yearToGo, month, 1).toISOString());
     this.getReservations();
   }
 
@@ -131,6 +166,8 @@ export class ReservationsComponent implements OnInit {
           .getBusLines()
           .pipe(
             tap((data: IBusLine[]) => {
+              this.currentYear = new Date().getFullYear();
+              this.generateMonths(new Date().getMonth(), new Date().getFullYear());
               this.activeLink = new Date().getMonth();
               this.initializeRangePicker();
               this.reservationForm = this.fb.group({
@@ -302,7 +339,8 @@ export class ReservationsComponent implements OnInit {
           ...this.reservations,
         ];
         const month: number = new Date(data.data.reservationDate).getMonth();
-        this.goToMonth(month);
+        const year: number = new Date(data.data.reservationDate).getFullYear();
+        this.goToMonth(month, year);
       }
     });
 
@@ -320,7 +358,8 @@ export class ReservationsComponent implements OnInit {
             ...this.reservations,
           ];
           const month: number = new Date(data.data.reservationDate).getMonth();
-          this.goToMonth(month);
+          const year: number = new Date(data.data.reservationDate).getFullYear();
+          this.goToMonth(month, year);
         }),
         take(1),
       )
