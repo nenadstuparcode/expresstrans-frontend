@@ -19,32 +19,31 @@
           </a>
         </nav>
       </ion-col>
-      <ion-col size-xs="12" offset-xs="0" size-md="6" offset-md="3" *ngIf="campaignOne">
-        <ion-row>
-          <ion-col size-xs="12" size-md="6" offset-md="3">
-            <div class="filter-container">
-              <mat-form-field class="example-form-field" appearance="legacy">
-                <mat-label>Izaberi Period</mat-label>
-                <mat-date-range-input [formGroup]="campaignOne" [rangePicker]="campaignOnePicker">
-                  <input matStartDate placeholder="Start date" formControlName="start" />
-                  <input matEndDate placeholder="End date" formControlName="end" />
-                </mat-date-range-input>
-                <mat-datepicker-toggle matSuffix [for]="campaignOnePicker"></mat-datepicker-toggle>
-                <mat-date-range-picker #campaignOnePicker></mat-date-range-picker>
-              </mat-form-field>
-            </div>
-          </ion-col>
-        </ion-row>
+
+      <ion-col size-xs="12" size-md="6" offset-md="3" *ngIf="campaignOne">
+        <div class="filter-container">
+          <mat-form-field class="example-form-field" appearance="legacy">
+            <mat-label>Izaberi Period</mat-label>
+            <mat-date-range-input [formGroup]="campaignOne" [rangePicker]="campaignOnePicker">
+              <input matStartDate placeholder="Start date" formControlName="start" />
+              <input matEndDate placeholder="End date" formControlName="end" />
+            </mat-date-range-input>
+            <mat-datepicker-toggle matSuffix [for]="campaignOnePicker"></mat-datepicker-toggle>
+            <mat-date-range-picker #campaignOnePicker></mat-date-range-picker>
+          </mat-form-field>
+        </div>
       </ion-col>
+
       <ion-col size-md="8" offset-md="2">
         <mat-tab-nav-panel #tabPanel>
           <div class="mat-table-container mat-elevation-z8" *ngIf="reservationForm">
             <div [formGroup]="reservationForm">
               <table mat-table [dataSource]="[1]">
+
                 <ng-container matColumnDef="reservationOnName">
                   <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
                   <td mat-cell *matCellDef="let element">
-                    <mat-form-field appearance="legacy" class="width-80">
+                    <mat-form-field appearance="legacy" class="width-130">
                       <mat-label>Ime i Prezime</mat-label>
                       <input type="text" formControlName="reservationOnName" matInput placeholder="Ime i prezime" />
                     </mat-form-field>
@@ -65,7 +64,7 @@
                         [matAutocomplete]="auto"
                       />
                       <mat-autocomplete [displayWith]="displayFnDe" autoActiveFirstOption #auto="matAutocomplete">
-                        <mat-option *ngFor="let busline of filteredBuslines | async" [value]="busline._id">
+                        <mat-option class="autocomplete-option" *ngFor="let busline of filteredBuslines | async" [value]="busline._id">
                           {{ busline.lineCityStart }} - {{ busline.lineCityEnd }}
                         </mat-option>
                       </mat-autocomplete>
@@ -115,17 +114,23 @@
                 <ng-container matColumnDef="reservationNote">
                   <th mat-header-cell *matHeaderCellDef>Napomena</th>
                   <td mat-cell *matCellDef="let element">
+
                     <mat-form-field appearance="legacy" class="width-130">
-                      <mat-label>Napomena</mat-label>
-                      <input type="text" formControlName="reservationNote" matInput />
+                      <mat-label>Unesi napomenu</mat-label>
+                      <textarea matInput
+                                formControlName="reservationNote"
+                                cdkTextareaAutosize
+                                #autosize="cdkTextareaAutosize"
+                                cdkAutosizeMinRows="1"
+                                cdkAutosizeMaxRows="5"></textarea>
                     </mat-form-field>
                   </td>
                   <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
                 <ng-container matColumnDef="action">
-                  <th mat-header-cell *matHeaderCellDef>Akcije</th>
-                  <td mat-cell *matCellDef="let element">
+                  <th mat-header-cell *matHeaderCellDef class="ion-text-right">Akcije</th>
+                  <td mat-cell *matCellDef="let element" class="ion-text-right">
                     <button
                       [disabled]="!reservationForm.valid"
                       (click)="createReservation()"
@@ -180,13 +185,25 @@
 
                 <ng-container matColumnDef="reservationNote">
                   <th mat-header-cell *matHeaderCellDef>Napomena</th>
-                  <td mat-cell *matCellDef="let element">{{element.reservationNote}}</td>
+                  <td mat-cell *matCellDef="let element">
+                    <mat-form-field appearance="legacy" class="width-130">
+                      <mat-label>Napomena</mat-label>
+                      <textarea matInput
+                                readonly
+                                [value]="element.reservationNote"
+                                cdkTextareaAutosize
+                                #autosize="cdkTextareaAutosize"
+                                cdkAutosizeMinRows="1"
+                                cdkAutosizeMaxRows="5"></textarea>
+                    </mat-form-field>
+<!--                    <span class="reservation-note">{{element.reservationNote}}</span>-->
+                  </td>
                   <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
                 <ng-container matColumnDef="action">
-                  <th mat-header-cell *matHeaderCellDef>Akcije</th>
-                  <td mat-cell *matCellDef="let element">
+                  <th mat-header-cell *matHeaderCellDef class="ion-text-right">Akcije</th>
+                  <td mat-cell *matCellDef="let element" class="ion-text-right">
                     <button
                       (click)="deleteReservationModal(element)"
                       class="btn btn-sm btn-outline-dark standard-button">Ukloni</button>
