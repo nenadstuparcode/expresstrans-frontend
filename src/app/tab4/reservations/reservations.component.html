@@ -12,23 +12,20 @@
             class="links"
             mat-tab-link
             (click)="loadPrevious(currentYear)"
-          >
-            Ucitaj starije
+          >Ucitaj starije
           </a>
           <a
             class="links"
             mat-tab-link
             *ngFor="let link of monthsToShow"
             (click)="goToMonth(link.code, link.year)"
-            [active]="activeLink === link.code"
-          >
+            [active]="activeLink === link.code">
             {{ link.name }} - {{link.year}}
           </a>
           <a
             class="links"
             mat-tab-link
-            (click)="loadNext(currentYear)"
-          >
+            (click)="loadNext(currentYear)">
             Ucitaj novije
           </a>
         </nav>

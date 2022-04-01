@@ -100,6 +100,7 @@ export interface ICreateInvoicePayload {
   secondCalculation: number;
   returnTaxBih: number;
   invoiceNumber: number;
+  invoicePublicId: number;
 }
 
 export interface IUpdateInvoicePayload {
@@ -145,6 +146,7 @@ export interface ICreateInvoiceResponse {
   secondCalculation: number;
   returnTaxBih: number;
   invoiceDrivers: string[];
+  invoicePublicId: number;
 }
 
 export interface IInvoice {
@@ -171,6 +173,7 @@ export interface IInvoice {
   invoiceDrivers: any[];
   driversArray?: string;
   createdAt: string;
+  invoicePublicId: number;
   user: string;
   modifiedAt: string;
 }

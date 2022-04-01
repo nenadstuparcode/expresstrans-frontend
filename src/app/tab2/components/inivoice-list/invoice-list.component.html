@@ -38,11 +38,12 @@
                     <ion-icon size="large" name="document-text-outline"></ion-icon>
                     {{ invoice.invoiceNumber }}
                   </ion-label>
+                  <small class="ml-1 font-weight-bold" *ngIf="invoice.invoicePublicId">Javni Id: {{invoice.invoicePublicId}}</small>
 
                   <ion-label class="invoice-item ml-1">
                     <ion-icon size="small" name="calendar-outline"></ion-icon>
-                    {{ invoice.invoiceDateStart | date: 'dd MMM' }} -
-                    {{ invoice.invoiceDateReturn | date: 'dd MMM YYYY' }}
+                    {{ invoice.invoiceDateStart | date: 'dd MMM YY' }} -
+                    {{ invoice.invoiceDateReturn | date: 'dd MMM YY' }}
                   </ion-label>
 
                   <ion-label class="invoice-item ml-1">

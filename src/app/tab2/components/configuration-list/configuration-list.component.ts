@@ -9,21 +9,15 @@ import { Router } from '@angular/router';
 export class ConfigurationListComponent {
   public configs: any[] = [
     {
-      title: 'linije',
-      icon: 'bus-sharp',
-      description: 'Linije',
-      color: '#E63135',
-    },
-    {
-      title: 'izvjestaji',
-      icon: 'analytics-outline',
-      description: 'Izvještaji',
-      color: '#E63135',
-    },
-    {
       title: 'fakture',
       icon: 'document-text-outline',
       description: 'Fakture',
+      color: '#E63135',
+    },
+    {
+      title: 'linije',
+      icon: 'bus-sharp',
+      description: 'Linije',
       color: '#E63135',
     },
     {

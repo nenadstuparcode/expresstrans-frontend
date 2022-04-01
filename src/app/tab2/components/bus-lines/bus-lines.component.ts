@@ -82,7 +82,7 @@ export class BusLinesComponent implements OnInit, OnDestroy {
   }
 
   public getMoreBusLines(): void {
-    if (this.busLinesCount <= this.busLineTotalCount) {
+    if (this.busLinesCount <= this.busLineTotalCount && this.busLineTotalCount > 10) {
       this.searchSkip += 10;
       this.busLineService
         .searchBusLines({
@@ -270,6 +270,7 @@ export class BusLinesComponent implements OnInit, OnDestroy {
     modal.onDidDismiss().then((res: any) => {
       if (res.role === 'save') {
         const newBusLine: IBusLine = res.data;
+        this.busLines = this.busLines.filter((bus: IBusLine) => bus._id !== data._id)
         this.busLines.unshift(newBusLine);
       }
     });

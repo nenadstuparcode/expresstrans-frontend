@@ -2,12 +2,11 @@ import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import {
   LoadingController,
   ModalController,
-  PickerColumnOption,
   PickerController,
   ToastController,
 } from '@ionic/angular';
 import { BusLineService } from '@app/tab2/bus-line.service';
-import { catchError, filter, map, startWith, takeUntil, tap } from 'rxjs/operators';
+import { catchError, map, startWith, take, takeUntil, tap } from 'rxjs/operators';
 import { Observable, Subject, throwError } from 'rxjs';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { MatDatepicker } from '@angular/material/datepicker';
@@ -30,7 +29,6 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
   public createTicketForm: FormGroup;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public minDate: Date;
-  public columnOptions: PickerColumnOption[] = [];
   public pickedOption: any;
   public availableDays: number[] = [];
   public daysForLine: any[] = [];
@@ -67,30 +65,22 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
     this.invoiceService
       .searchInvoices({ searchTerm: '', searchSkip: 0, searchLimit: 20 })
       .pipe(
-        filter((data: ICommonResponse<IInvoice[]>) => !!data),
         tap((data: ICommonResponse<IInvoice[]>) => {
           this.invoices = data.data;
         }),
         takeUntil(this.componentDestroyed$),
+        catchError((error: Error) => throwError(error)),
       )
       .subscribe();
 
     this.busLineService
       .getBusLines()
       .pipe(
-        filter((data: IBusLine[]) => !!data),
         takeUntil(this.componentDestroyed$),
         tap((data: IBusLine[]) => {
           this.busLines = data;
         }),
-        map((data: IBusLine[]) =>
-          data.map((line: IBusLine) => ({
-            text: `(${line.lineCountryStart === 'bih' ? 'BIH' : 'DE'}) ${line.lineCityStart} - ${line.lineCityEnd}`,
-            value: line,
-          })),
-        ),
-        tap((data: PickerColumnOption[]) => {
-          this.columnOptions = data;
+        tap(() => {
           this.createTicketForm = this.fb.group({
             ticketOnName: this.fb.control('', Validators.required),
             ticketPhone: this.fb.control(''),
@@ -114,23 +104,7 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
             map((name: string) => (name ? this._filter(name) : this.busLines.slice())),
           );
         }),
-        tap(() => this.watchTicketPrice()),
-      )
-      .subscribe();
-  }
-
-  public watchTicketPrice(): void {
-    this.createTicketForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(data, this.createTicketForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.createTicketForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
+        catchError((error: Error) => throwError(error)),
       )
       .subscribe();
   }
@@ -156,19 +130,6 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
 
   public get createTicketType(): TicketType {
     return this.createTicketForm.controls.ticketType.value;
-  }
-
-  public setTicketPrice(buslineId: string, roundTrip: boolean): void {
-    const busLine: IBusLine = this.busLines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine && this.createTicketForm.controls.ticketType.value !== 'return') {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    this.createTicketForm.controls.ticketPrice.setValue(price);
   }
 
   public dismissModal(role: string): void {
@@ -239,7 +200,6 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
   }
 
   public createTicket(): void {
-    this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, this.createTicketForm.controls.ticketRoundTrip.value)
     if (this.createTicketForm.valid) {
       this.presentLoading('Kreiranje karte...')
         .then(() => {
@@ -251,7 +211,7 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
                 this.presentToast('Karta uspjesno kreirana.');
                 this.modalController.dismiss(res.data, 'save');
               }),
-              takeUntil(this.componentDestroyed$),
+              take(1),
               catchError((error: Error) => {
                 this.loadingCtrl.dismiss();
 

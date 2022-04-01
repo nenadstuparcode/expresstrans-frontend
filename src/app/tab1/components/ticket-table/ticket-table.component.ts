@@ -12,7 +12,7 @@ import {
   tap,
 } from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
-import {IBusLine, IDriver, IInvoice, IPrintInvoiceTaxPayload} from '@app/tab2/tab2.interface';
+import { IBusLine, IDriver, IInvoice, IPrintInvoiceTaxPayload } from '@app/tab2/tab2.interface';
 import { TicketService } from '@app/tab1/ticket.service';
 import { ICreateTicketResponse, ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { combineLatest, Observable, Subject, throwError } from 'rxjs';
@@ -82,15 +82,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
     'action',
   ];
 
-  public daynames: string[] = [
-    'Nedelja',
-    'Ponedeljak',
-    'Utorak',
-    'Srijeda',
-    'Četvrtak',
-    'Petak',
-    'Subota',
-  ];
+  public daynames: string[] = ['Nedelja', 'Ponedeljak', 'Utorak', 'Srijeda', 'Četvrtak', 'Petak', 'Subota'];
 
   public active: number = 1;
   public invoices: IInvoice[] = [];
@@ -178,8 +170,8 @@ export class TicketTableComponent implements OnInit, OnDestroy {
                 return {
                   ...inv,
                   driversArray: inv.invoiceDrivers.map((driver: IDriver) => driver.name).join(','),
-                }
-              })
+                };
+              });
               this.buslines = buslines;
               this.buslinesDe = buslines.filter((bus: IBusLine) => bus.lineCountryStart === 'de');
               this.buslinesBih = buslines.filter((bus: IBusLine) => bus.lineCountryStart === 'bih');
@@ -250,8 +242,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
             tap(() => {
               this.listenForm1Change();
               this.listenForm2Change();
-              this.watchTicketPriceBih();
-              this.watchTicketPriceDe();
               this.listenTaxForm();
               this.loadingCtrl.dismiss();
             }),
@@ -385,72 +375,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
     return +sum.toFixed(2);
   }
 
-  public setTicketPriceBih(buslineId: string, roundTrip: boolean): void {
-    const busLine: IBusLine = this.buslines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine) {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    if (this.oneWayForm.controls.ticketType.value === 'return') {
-      this.oneWayForm.controls.ticketPrice.setValue(0);
-    } else {
-      this.oneWayForm.controls.ticketPrice.setValue(price);
-    }
-  }
-
-  public watchTicketPriceBih(): void {
-    this.oneWayForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPriceBih(data, this.oneWayForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.oneWayForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPriceBih(this.oneWayForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-  }
-
-  public setTicketPriceDe(buslineId: string, roundTrip: boolean): void {
-    const busLine: IBusLine = this.buslines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine) {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    if (this.returnForm.controls.ticketType.value === 'return') {
-      this.returnForm.controls.ticketPrice.setValue(0);
-    } else {
-      this.returnForm.controls.ticketPrice.setValue(price);
-    }
-  }
-
-  public watchTicketPriceDe(): void {
-    this.returnForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPriceDe(data, this.returnForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.returnForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPriceDe(this.returnForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-  }
-
   public initiateTaxForm(): FormGroup {
     return this.fb.group({
       totalKilometers: this.fb.control(
@@ -477,9 +401,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
         this.currentInvoice.returnTaxBih ? this.currentInvoice.returnTaxBih : 0,
         Validators.required,
       ),
-      invoiceDrivers: this.fb.control(
-        this.currentInvoice.invoiceDrivers ? this.currentInvoice.invoiceDrivers : [],
-      ),
+      invoiceDrivers: this.fb.control(this.currentInvoice.invoiceDrivers ? this.currentInvoice.invoiceDrivers : []),
     });
   }
 
@@ -610,7 +532,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
             if (data === 'return') {
               this.oneWayForm.controls['ticketPrice'].setValue(0);
             } else {
-              this.oneWayForm.controls['ticketPrice'].setValue(0);
               this.oneWayForm.controls['ticketPrice'].enable();
             }
           }
@@ -691,7 +612,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
             if (data === 'return') {
               this.returnForm.controls['ticketPrice'].setValue(0);
             } else {
-              this.returnForm.controls['ticketPrice'].setValue(0);
               this.returnForm.controls['ticketPrice'].enable();
             }
           }
@@ -835,88 +755,90 @@ export class TicketTableComponent implements OnInit, OnDestroy {
   }
 
   public printInvoiceTax(withExpenses: boolean): void {
-    this.presentLoading('Printanje izvjestaja u PDF-u...').then(() => {
-      const payload: IPrintInvoiceTaxPayload = {
-        invoice: {
-          ...this.currentInvoice,
-          invoiceDateStart: this.datePipe.transform(this.currentInvoice.invoiceDateStart, 'dd/MM/YYYY'),
-        },
-        bihTickets: this.ticketsOneWay.map((tick: ITicket) => {
-          return {
-            ...tick,
-            ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
-            ticketStartTime: this.datePipe.transform(tick.ticketStartTime, 'HH:mm'),
-          };
-        }),
-        deTickets: this.ticketsReturn.map((tick: ITicket) => {
-          return {
-            ...tick,
-            ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
-            ticketStartTime: this.datePipe.transform(tick.ticketStartTime, 'HH:mm'),
-          };
-        }),
-        expenses: this.expensesForm.value,
-        tax: this.taxForm.value,
-        totalPriceDe: this.totalPriceDe,
-        totalPriceBih: this.totalPriceBih,
-        showExpenses: withExpenses,
-      };
+    this.presentLoading('Printanje izvjestaja u PDF-u...')
+      .then(() => {
+        const payload: IPrintInvoiceTaxPayload = {
+          invoice: {
+            ...this.currentInvoice,
+            invoiceDateStart: this.datePipe.transform(this.currentInvoice.invoiceDateStart, 'dd/MM/YYYY'),
+            invoiceDateReturn: this.datePipe.transform(this.currentInvoice.invoiceDateReturn, 'dd/MM/YYYY'),
+          },
+          bihTickets: this.ticketsOneWay.map((tick: ITicket) => {
+            return {
+              ...tick,
+              ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
+              ticketStartTime: this.datePipe.transform(tick.ticketStartTime, 'HH:mm'),
+            };
+          }),
+          deTickets: this.ticketsReturn.map((tick: ITicket) => {
+            return {
+              ...tick,
+              ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
+              ticketStartTime: this.datePipe.transform(tick.ticketStartTime, 'HH:mm'),
+            };
+          }),
+          expenses: this.expensesForm.value,
+          tax: this.taxForm.value,
+          totalPriceDe: this.totalPriceDe,
+          totalPriceBih: this.totalPriceBih,
+          showExpenses: withExpenses,
+        };
 
-      this.invoiceService
-        .printInvoiceTax(payload)
-        .pipe(
-          tap((response: ArrayBuffer) => {
-            if (this.platform.is('android') || this.platform.is('iphone')) {
-              try {
-                File.writeFile(
-                  File.documentsDirectory,
-                  'izvjestaj-bih.pdf',
-                  new Blob([response], { type: 'application/pdf' }),
-                  {
-                    replace: true,
-                  },
-                ).catch((error: Error) => throwError(error));
+        this.invoiceService
+          .printInvoiceTax(payload)
+          .pipe(
+            tap((response: ArrayBuffer) => {
+              if (this.platform.is('android') || this.platform.is('iphone')) {
+                try {
+                  File.writeFile(
+                    File.documentsDirectory,
+                    'izvjestaj-bih.pdf',
+                    new Blob([response], { type: 'application/pdf' }),
+                    {
+                      replace: true,
+                    },
+                  ).catch((error: Error) => throwError(error));
 
-                File.writeFile(
-                  File.externalRootDirectory + '/Download',
-                  'izvjestaj-bih.pdf',
-                  new Blob([response], { type: 'application/pdf' }),
-                  {
-                    replace: true,
-                  },
-                ).catch((error: Error) => throwError(error));
-              } catch (err) {
-                throwError(err);
+                  File.writeFile(
+                    File.externalRootDirectory + '/Download',
+                    'izvjestaj-bih.pdf',
+                    new Blob([response], { type: 'application/pdf' }),
+                    {
+                      replace: true,
+                    },
+                  ).catch((error: Error) => throwError(error));
+                } catch (err) {
+                  throwError(err);
+                }
+              } else {
+                const file: Blob = new Blob([response], {
+                  type: 'application/pdf',
+                });
+                const fileURL: string = URL.createObjectURL(file);
+                window.open(fileURL);
+                saveAs(file, 'izvjestaj-bih.pdf');
               }
-            } else {
-              const file: Blob = new Blob([response], {
-                type: 'application/pdf',
-              });
-              const fileURL: string = URL.createObjectURL(file);
-              window.open(fileURL);
-              saveAs(file, 'izvjestaj-bih.pdf');
-            }
-          }),
-          tap(() => {
-            this.loadingCtrl.dismiss();
-            FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj-bih.pdf', 'application/pdf');
+            }),
+            tap(() => {
+              this.loadingCtrl.dismiss();
+              FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj-bih.pdf', 'application/pdf');
 
-            this.presentToast('Štampanje završeno.');
-          }),
-          catchError((error: Error) => {
-            this.loadingCtrl.dismiss();
+              this.presentToast('Štampanje završeno.');
+            }),
+            catchError((error: Error) => {
+              this.loadingCtrl.dismiss();
 
-            return throwError(error);
-          }),
-          take(1),
-        )
-        .subscribe();
-    }).catch((error: Error) => {
-      this.loadingCtrl.dismiss();
+              return throwError(error);
+            }),
+            take(1),
+          )
+          .subscribe();
+      })
+      .catch((error: Error) => {
+        this.loadingCtrl.dismiss();
 
-      return throwError(error);
-    })
-
+        return throwError(error);
+      });
   }
 
   public ngOnDestroy(): void {

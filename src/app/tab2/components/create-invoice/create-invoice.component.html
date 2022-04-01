@@ -6,9 +6,14 @@
     <ion-title>Kreiraj Fakturu</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content fullscreen class="ion-padding">
+<ion-content fullscreen>
   <form [formGroup]="createInvoiceForm">
-    <ion-list>
+    <ion-list class="ion-no-margin">
+      <ion-item>
+        <ion-label position="stacked">Javni ID </ion-label>
+        <ion-input formControlName="invoicePublicId" type="number" placeholder="Unesi javni id"></ion-input>
+      </ion-item>
+
       <ion-item button="true" id="create-invoice-date-input-start">
         <ion-label>Datum Polaska</ion-label>
         <ion-text slot="end" *ngIf="createInvoiceForm.controls.invoiceDateStart.value">{{
@@ -53,6 +58,7 @@
           }}</ion-select-option>
         </ion-select>
       </ion-item>
+
       <ng-container [formGroup]="driverForm">
         <ion-list-header>Dodaj Vozače</ion-list-header>
         <ion-item lines="none">

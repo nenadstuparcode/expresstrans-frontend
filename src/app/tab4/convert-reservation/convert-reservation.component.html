@@ -95,6 +95,11 @@
         <ion-button slot="end" (click)="openDateModal('time')">Vrijeme</ion-button>
       </ion-item>
 
+      <ion-item>
+        <ion-label position="stacked">Cijena </ion-label>
+        <ion-input formControlName="ticketPrice" type="number" placeholder="Unesi cijenu"></ion-input>
+      </ion-item>
+
     </ion-list>
 
     <ion-button [disabled]="!createTicketForm.valid" (click)="createTicket()" class="submit-ticket ion-no-margin" size="large" expand="full" color="primary">Kreiraj

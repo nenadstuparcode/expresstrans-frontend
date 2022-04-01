@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { LoadingController, ModalController } from '@ionic/angular';
-import { filter, take, tap } from 'rxjs/operators';
+import {catchError, filter, take, tap} from 'rxjs/operators';
 import { ICommonResponse } from '@app/services/user.interface';
 import { ICreateInvoiceResponse, IDriver, IVehicle } from '@app/tab2/tab2.interface';
 import { Subject, throwError } from 'rxjs';
@@ -51,6 +51,7 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
       returnTaxBih: this.fb.control(0, Validators.required),
       invoiceDrivers: this.fb.array([], Validators.required),
       invoiceTotalBill: this.fb.control(0, Validators.required),
+      invoicePublicId: this.fb.control(''),
     });
 
     this.driverForm = this.fb.group({
@@ -76,6 +77,9 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
         filter((data: IDriver[]) => !!data),
         tap((data: IDriver[]) => (this.availableDrivers = data)),
         take(1),
+        catchError((error: Error) => {
+          return throwError(error);
+        }),
       )
       .subscribe();
   }
@@ -87,6 +91,9 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
         filter((data: IVehicle[]) => !!data),
         tap((data: IVehicle[]) => (this.availableVehicles = data)),
         take(1),
+        catchError((error: Error) => {
+          return throwError(error);
+        }),
       )
       .subscribe();
   }

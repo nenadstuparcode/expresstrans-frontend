@@ -6,9 +6,9 @@
     <ion-title>Kreiraj Liniju</ion-title>
   </ion-toolbar>
 </ion-header>
-<ion-content fullscreen class="ion-padding">
+<ion-content fullscreen>
   <form [formGroup]="createBusLineForm">
-    <ion-list>
+    <ion-list class="ion-no-margin">
       <ion-item>
         <ion-label position="stacked">Mjesto polaska</ion-label>
         <ion-input formControlName="lineCityStart" placeholder="Unesite grad" type="text"></ion-input>

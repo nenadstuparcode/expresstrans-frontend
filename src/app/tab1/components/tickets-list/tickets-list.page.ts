@@ -103,7 +103,6 @@ export class TicketsListComponent implements OnInit, OnDestroy {
       this.busLineService
         .getBusLines()
         .pipe(
-          filter((data: IBusLine[]) => !!data),
           tap((data: IBusLine[]) => (this.busLines = data)),
           concatMap(() =>
             this.ticketService.searchTickets({
@@ -151,7 +150,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
   }
 
   public getMoreTickets(): void {
-    if (this.ticketsCount <= this.ticketTotalCount) {
+    if (this.ticketsCount <= this.ticketTotalCount && this.ticketTotalCount > 10) {
       this.presentLoading('Učitavanje karti...')
         .then(() => {
           this.searchSkip += 10;

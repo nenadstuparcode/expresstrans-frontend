@@ -540,7 +540,7 @@
               <ng-container matColumnDef="firstCalculation">
                 <th mat-header-cell *matHeaderCellDef> Ukupno </th>
                 <td mat-cell *matCellDef="let element">
-                  <mat-label>{{ getTotalTaxBih() }} KM</mat-label>
+                  <mat-label>{{ getTotalTaxBih() ? getDefaultTaxBih() : '0' }} KM</mat-label>
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
@@ -548,7 +548,7 @@
               <ng-container matColumnDef="secondCalculation">
                 <th mat-header-cell *matHeaderCellDef> Osnovica </th>
                 <td mat-cell *matCellDef="let element">
-                  <mat-label>{{ getDefaultTaxBih() }} KM</mat-label>
+                  <mat-label>{{ getDefaultTaxBih() ? getDefaultTaxBih() : '0' }} KM</mat-label>
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
@@ -556,7 +556,7 @@
               <ng-container matColumnDef="returnTaxBih">
                 <th mat-header-cell *matHeaderCellDef> PDV </th>
                 <td mat-cell *matCellDef="let element">
-                  <mat-label>{{ taxReturnBih() }} KM</mat-label>
+                  <mat-label>{{ taxReturnBih() ? taxReturnBih() : '0' }} KM</mat-label>
                 </td>
                 <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>

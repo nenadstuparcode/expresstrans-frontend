@@ -78,16 +78,10 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
         tap((data: IBusLine[]) => {
           this.busLines = data;
         }),
-        map((data: IBusLine[]) =>
-          data.map((line: IBusLine) => ({
-            text: `(${line.lineCountryStart === 'bih' ? 'BIH' : 'DE'}) ${line.lineCityStart} - ${line.lineCityEnd}`,
-            value: line,
-          })),
-        ),
         tap(() => {
           this.createTicketForm = this.fb.group({
             ticketOnName: this.fb.control(this.reservation.reservationOnName, Validators.required),
-            ticketPhone: this.fb.control(this.reservation.reservationPhone, Validators.required),
+            ticketPhone: this.fb.control(this.reservation.reservationPhone ? this.reservation.reservationPhone : ''),
             ticketEmail: this.fb.control(''),
             ticketNote: this.fb.control(this.reservation.reservationNote ? this.reservation.reservationNote : ''),
             ticketType: this.fb.control('classic', Validators.required),
@@ -108,23 +102,6 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
             map((name: string) => (name ? this._filter(name) : this.busLines.slice())),
           );
         }),
-        tap(() => this.watchTicketPrice()),
-      )
-      .subscribe();
-  }
-
-  public watchTicketPrice(): void {
-    this.createTicketForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(data, this.createTicketForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.createTicketForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(this.createTicketForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
       )
       .subscribe();
   }
@@ -142,29 +119,6 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
     }
   };
 
-  public _filter(name: string): IBusLine[] {
-    const filterValue: string = name.toLowerCase();
-
-    return this.busLines.filter((option: IBusLine) => option.lineCityStart.toLowerCase().includes(filterValue));
-  }
-
-  public get createTicketType(): TicketType {
-    return this.createTicketForm.controls.ticketType.value;
-  }
-
-  public setTicketPrice(buslineId: string, roundTrip: boolean): void {
-    const busLine: IBusLine = this.busLines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine) {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    this.createTicketForm.controls.ticketPrice.setValue(price);
-  }
-
   public dismissModal(role: string): void {
     this.modalController
       .dismiss(
@@ -174,6 +128,16 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
         role,
       )
       .catch((error: Error) => throwError(error));
+  }
+
+  public _filter(name: string): IBusLine[] {
+    const filterValue: string = name.toLowerCase();
+
+    return this.busLines.filter((option: IBusLine) => option.lineCityStart.toLowerCase().includes(filterValue));
+  }
+
+  public get createTicketType(): TicketType {
+    return this.createTicketForm.controls.ticketType.value;
   }
 
   public setDate(date: string): void {
@@ -201,16 +165,6 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
       });
   }
 
-  public handleBusLine(selectedLine: any): void {
-    this.pickedOption = selectedLine;
-    this.availableDays = selectedLine.linija.value.lineArray.map((line: any) => line.day);
-    this.daysForLine = selectedLine.linija.value.lineArray;
-
-    this.createTicketForm.controls.ticketBusLineId.setValue(selectedLine.linija.value._id);
-    this.createTicketForm.controls.ticketStartDate.setValue('');
-    this.createTicketForm.controls.ticketStartTime.setValue('');
-  }
-
   public async presentToast(msg: string): Promise<void> {
     const toast: HTMLIonToastElement = await this.toastCtrl.create({
       message: msg,
@@ -233,8 +187,6 @@ export class ConvertReservationComponent implements OnInit, OnDestroy {
   }
 
   public createTicket(): void {
-    this.setTicketPrice(this.reservation.ticketBusLineId, this.createTicketForm.controls.ticketRoundTrip.value);
-
     if (this.createTicketForm.valid) {
       this.presentLoading('Kreiranje karte...')
         .then(() => {

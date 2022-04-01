@@ -173,7 +173,7 @@ export class ReservationsComponent implements OnInit {
               this.reservationForm = this.fb.group({
                 reservationOnName: this.fb.control('', Validators.required),
                 ticketBusLineId: this.fb.control('', Validators.required),
-                reservationPhone: this.fb.control('', Validators.required),
+                reservationPhone: this.fb.control(''),
                 reservationDate: this.fb.control('', Validators.required),
                 reservationTime: this.fb.control('', Validators.required),
                 reservationNote: this.fb.control(''),

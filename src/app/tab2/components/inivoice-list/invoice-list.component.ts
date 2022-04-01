@@ -234,7 +234,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   }
 
   public getMoreInvoices(): void {
-    if (this.invoicesCount <= this.invoicesTotalCount) {
+    if (this.invoicesCount <= this.invoicesTotalCount && this.invoicesTotalCount > 10) {
       this.presentLoading('Učitavanje Faktura...')
         .then(() => {
           this.searchSkip += 10;

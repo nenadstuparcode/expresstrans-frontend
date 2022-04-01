@@ -1,19 +1,12 @@
-import { AfterViewInit, Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { MatDatepicker } from '@angular/material/datepicker';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Observable, Subject, throwError } from 'rxjs';
-import {
-  LoadingController,
-  ModalController,
-  PickerColumn,
-  PickerColumnOption,
-  PickerController,
-  ToastController,
-} from '@ionic/angular';
+import { LoadingController, ModalController, PickerController, ToastController } from '@ionic/angular';
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { DateAdapter } from '@angular/material/core';
 import { TicketService } from '@app/tab1/ticket.service';
-import {filter, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
+import { catchError, filter, map, startWith, take, takeUntil, tap } from 'rxjs/operators';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
@@ -26,13 +19,12 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
   templateUrl: './ticket-edit.component.html',
   styleUrls: ['./ticket-edit.component.scss'],
 })
-export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TicketEditComponent implements OnInit, OnDestroy {
   @ViewChild(MatDatepicker) datepicker: MatDatepicker<Date>;
   @Input() ticketData: ITicket = null;
   public invoices: IInvoice[] = [];
   public editTicketForm: FormGroup;
   public componentDestroyed$: Subject<void> = new Subject<void>();
-  public columnOptions: PickerColumnOption[] = [];
   public pickedOption: any;
   public availableDays: number[] = [];
   public daysForLine: any[] = [];
@@ -64,31 +56,6 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.editTicketForm.controls.ticketType.value;
   }
 
-  public ngAfterViewInit(): void {
-    this.busLineService
-      .getBusLines()
-      .pipe(
-        tap((data: IBusLine[]) => {
-          // eslint-disable-next-line no-underscore-dangle
-          const selectedLine: IBusLine[] = data.filter(
-            (line: IBusLine) => line._id === this.ticketData.ticketBusLineId,
-          );
-
-          this.pickedOption = {
-            linija: {
-              // eslint-disable-next-line max-len
-              text: `(${selectedLine[0].lineCountryStart === 'bih' ? 'BIH' : 'DE'}) ${
-                selectedLine[0].lineCityStart
-              } - ${selectedLine[0].lineCityEnd}`,
-              value: selectedLine[0],
-            },
-          };
-        }),
-        take(1),
-      )
-      .subscribe();
-  }
-
   public ngOnInit(): void {
     this.invoiceService
       .searchInvoices({ searchTerm: '', searchSkip: 0, searchLimit: 20 })
@@ -107,16 +74,9 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
         filter((data: IBusLine[]) => !!data),
         takeUntil(this.componentDestroyed$),
         tap((data: IBusLine[]) => {
-          this.busLines = data;
+          this.busLines = [...data];
         }),
-        map((data: IBusLine[]) =>
-          data.map((line: IBusLine) => ({
-            text: `(${line.lineCountryStart === 'bih' ? 'BIH' : 'DE'}) ${line.lineCityStart} - ${line.lineCityEnd}`,
-            value: line,
-          })),
-        ),
-        tap((data: PickerColumnOption[]) => {
-          this.columnOptions = data;
+        tap(() => {
           this.selectedInvoiceNumber = this.ticketData.ticketInvoiceNumber;
           this.editTicketForm = this.fb.group({
             ticketOnName: this.fb.control(this.ticketData.ticketOnName, Validators.required),
@@ -141,44 +101,9 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
             map((name: string) => (name ? this._filter(name) : this.busLines.slice())),
           );
         }),
-        //TODO remove subscribe from watchTicketPrice fucntion
-        tap(() => this.watchTicketPrice()),
+        catchError((error: Error) => throwError(error)),
       )
       .subscribe();
-  }
-
-  public watchTicketPrice(): void {
-    this.editTicketForm.controls.ticketBusLineId.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(data, this.editTicketForm.controls.ticketRoundTrip.value)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.editTicketForm.controls.ticketRoundTrip.valueChanges
-      .pipe(
-        tap((data: any) => this.setTicketPrice(this.editTicketForm.controls.ticketBusLineId.value, data)),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-  }
-
-  public setTicketPrice(buslineId: string, roundTrip: boolean): void {
-    // eslint-disable-next-line no-underscore-dangle
-    const busLine: IBusLine = this.busLines.find((line: IBusLine) => line._id === buslineId);
-    let price: number;
-
-    if (busLine) {
-      price = roundTrip ? busLine.linePriceRoundTrip : busLine.linePriceOneWay;
-    } else {
-      price = 0;
-    }
-
-    this.editTicketForm.controls.ticketPrice.setValue(price);
-  }
-
-  public setInvoiceNumber(num: any): void {
-    this.editTicketForm.controls.ticketInvoiceNumber.setValue(num);
   }
 
   public openDateModal(type: 'date' | 'time'): void {
@@ -210,27 +135,6 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
     this.modalController.dismiss();
   }
 
-  public dismissModal(role: string): void {
-    this.modalController
-      .dismiss(
-        {
-          dismissed: true,
-        },
-        role,
-      )
-      .catch((error: Error) => throwError(error));
-  }
-
-  public getColumns(): PickerColumn[] {
-    const options: PickerColumn = {
-      name: 'linija',
-      selectedIndex: 0,
-      options: [...this.columnOptions],
-    };
-
-    return [options];
-  }
-
   // eslint-disable-next-line @typescript-eslint/typedef
   public displayFn = (id: string): string => {
     if (id) {
@@ -244,16 +148,6 @@ export class TicketEditComponent implements OnInit, AfterViewInit, OnDestroy {
     const filterValue: string = name.toLowerCase();
 
     return this.busLines.filter((option: IBusLine) => option.lineCityStart.toLowerCase().includes(filterValue));
-  }
-
-  public handleBusLine(selectedLine: any): void {
-    this.pickedOption = selectedLine;
-    this.availableDays = selectedLine.linija.value.lineArray.map((line: any) => line.day);
-    this.daysForLine = selectedLine.linija.value.lineArray;
-    // eslint-disable-next-line no-underscore-dangle
-    this.editTicketForm.controls.ticketBusLineId.setValue(selectedLine.linija.value._id);
-    this.editTicketForm.controls.ticketStartDate.setValue('');
-    this.editTicketForm.controls.ticketStartTime.setValue('');
   }
 
   public async presentToast(msg: string): Promise<void> {

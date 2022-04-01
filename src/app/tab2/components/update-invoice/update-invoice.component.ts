@@ -71,6 +71,7 @@ export class UpdateInvoiceComponent implements OnInit, OnDestroy {
       returnTaxBih: this.fb.control(invoice.returnTaxBih ? invoice.returnTaxBih : 0, Validators.required),
       invoiceNumber: this.fb.control(invoice.invoiceNumber),
       invoiceTotalBill: this.fb.control(invoice.invoiceTotalBill, Validators.required),
+      invoicePublicId: this.fb.control(invoice.invoicePublicId ? invoice.invoicePublicId : 0),
     });
   }
 
