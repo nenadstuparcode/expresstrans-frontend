@@ -221,7 +221,7 @@ export class DriverListComponent implements OnInit {
         {
           text: 'Obriši',
           handler: () => {
-            this.deleteDriver(id);
+            this.deleteVehicle(id);
           },
         },
       ],
