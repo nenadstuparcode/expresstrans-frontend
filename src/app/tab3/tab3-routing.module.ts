@@ -1,25 +1,21 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { Tab3Page } from './tab3.page';
-import { AuthGuard } from '@app/services/auth-guard';
-import { UserDetailComponent } from '@app/tab3/components/user-detail/user-detail.component';
+import {TicketTableComponent} from '@app/tab3/components/ticket-table/ticket-table.component';
 
 const routes: Routes = [
   {
     path: '',
     component: Tab3Page,
-    canActivate: [AuthGuard],
     children: [
       {
         path: '',
         pathMatch: 'full',
-        redirectTo: 'korisnik',
-        canActivate: [AuthGuard],
+        redirectTo: 'fakture',
       },
       {
-        path: 'korisnik',
-        component: UserDetailComponent,
-        canActivate: [AuthGuard],
+        path: 'fakture',
+        component: TicketTableComponent,
       },
     ],
   },

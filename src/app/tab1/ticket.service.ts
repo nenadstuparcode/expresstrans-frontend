@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ICommonResponse } from '@app/services/user.interface';
 import { map, pluck } from 'rxjs/operators';
-import { ICreateTicketPayload, ICreateTicketResponse, ITicket } from '@app/tab1/ticket.interface';
+import {ICreateTicketPayload, ICreateTicketResponse, ITicket} from '@app/tab1/ticket.interface';
 import { environment } from '@env/environment';
 
 @Injectable({
@@ -28,6 +28,22 @@ export class TicketService {
       }),
       pluck('data'),
     );
+  }
+
+  public getTicketByType(payload: {
+    searchTerm: string;
+    pageNumber: number;
+    resultPerPage: number;
+    startDate: string;
+    endDate: string;
+    sortByProp: string;
+    sortOption: number;
+  }): Observable<ICommonResponse<ITicket[]>> {
+    return this.http.post(`${environment.apiUrl}/ticket/ticket-type`, payload).pipe(
+      map((data: ICommonResponse<ITicket[]>) => {
+        return data;
+      }),
+    )
   }
 
   public getTicket(id: string): Observable<ICommonResponse<ITicket>> {

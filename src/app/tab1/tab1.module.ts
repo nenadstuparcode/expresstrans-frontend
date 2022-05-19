@@ -50,6 +50,7 @@ import { MatDividerModule } from '@angular/material/divider';
     MatIconModule,
     MatCardModule,
     MatDividerModule,
+
   ],
   declarations: [
     Tab1Page,

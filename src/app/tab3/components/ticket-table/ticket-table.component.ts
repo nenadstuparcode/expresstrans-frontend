@@ -211,8 +211,8 @@ export class TicketTableComponent implements OnInit, OnDestroy {
             }),
             map((tickets: ITicket[]) => {
               this.expensesForm = this.initiateExpensesForm(this.currentInvoice);
-              this.oneWayForm = this.initiateForm();
-              this.returnForm = this.initiateForm();
+              this.oneWayForm = this.initiateForm(true);
+              this.returnForm = this.initiateForm(false);
               this.taxForm = this.initiateTaxForm();
               this.tickets = [...tickets];
               this.ticketsOneWay = [
@@ -253,8 +253,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
               );
             }),
             tap(() => {
-              this.listenForm1Change();
-              this.listenForm2Change();
               this.listenTaxForm();
               this.loadingCtrl.dismiss();
             }),
@@ -434,7 +432,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
     });
   }
 
-  public initiateForm(): FormGroup {
+  public initiateForm(fromBih: boolean): FormGroup {
     return this.fb.group({
       ticketOnName: this.fb.control('', Validators.required),
       ticketPhone: this.fb.control(''),
@@ -444,7 +442,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
       ticketValid: this.fb.control('6', Validators.required),
       ticketBusLineId: this.fb.control('', Validators.required),
       ticketRoundTrip: this.fb.control(false, Validators.required),
-      ticketStartDate: this.fb.control(this.currentInvoice.invoiceDateStart, Validators.required),
+      ticketStartDate: this.fb.control(fromBih ? this.currentInvoice.invoiceDateStart : this.currentInvoice.invoiceDateReturn, Validators.required),
       ticketStartTime: this.fb.control(this.ticketTime, Validators.required),
       ticketInvoiceNumber: this.fb.control(this.activeLink, Validators.required),
       ticketClassicId: this.fb.control(''),
@@ -498,8 +496,8 @@ export class TicketTableComponent implements OnInit, OnDestroy {
                   ? (this.ticketsReturn = [...this.ticketsReturn, newTicket])
                   : (this.ticketsOneWay = [...this.ticketsOneWay, newTicket]);
 
-                this.oneWayForm = this.initiateForm();
-                this.returnForm = this.initiateForm();
+                this.oneWayForm = this.initiateForm(true);
+                this.returnForm = this.initiateForm(false);
                 this.getInvoices('', this.pageLimit, this.pageSkip, this.activeLink);
               }),
               takeUntil(this.componentDestroyed$),
@@ -546,27 +544,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
           type === 'date' ? this.setDate(result, returnTicket) : this.setTime(result, returnTicket);
         }
       });
-  }
-
-  public listenForm1Change(): void {
-    this.oneWayForm.controls.ticketType.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        tap((data: string) => {
-          if (data) {
-            data === 'internet'
-              ? this.oneWayForm.controls['ticketClassicId'].disable()
-              : this.oneWayForm.controls['ticketClassicId'].enable();
-
-            if (data === 'return') {
-              this.oneWayForm.controls['ticketPrice'].setValue(0);
-            } else {
-              this.oneWayForm.controls['ticketPrice'].enable();
-            }
-          }
-        }),
-      )
-      .subscribe();
   }
 
   public updateInvoiceExpenses(): void {
@@ -628,27 +605,6 @@ export class TicketTableComponent implements OnInit, OnDestroy {
 
         return throwError(error);
       });
-  }
-
-  public listenForm2Change(): void {
-    this.returnForm.controls.ticketType.valueChanges
-      .pipe(
-        distinctUntilChanged(),
-        tap((data: string) => {
-          if (data) {
-            data === 'internet'
-              ? this.returnForm.controls['ticketClassicId'].disable()
-              : this.returnForm.controls['ticketClassicId'].enable();
-
-            if (data === 'return') {
-              this.returnForm.controls['ticketPrice'].setValue(0);
-            } else {
-              this.returnForm.controls['ticketPrice'].enable();
-            }
-          }
-        }),
-      )
-      .subscribe();
   }
 
   public getBusLineData(busLineId: string): IBusLine {

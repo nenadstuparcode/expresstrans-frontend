@@ -1,5 +1,5 @@
 {
-  "name": "ExpressTrans",
+  "name": "Express Trans",
   "version": "0.0.1",
   "author": "Nenad Stupar",
   "homepage": "https://www.express-trans.net",
@@ -29,7 +29,6 @@
     "@capacitor/app": "1.0.7",
     "@capacitor/core": "3.3.4",
     "@capacitor/filesystem": "^1.0.7",
-    "@capacitor/haptics": "1.1.3",
     "@capacitor/ios": "3.3.4",
     "@capacitor/keyboard": "1.2.0",
     "@capacitor/status-bar": "1.0.6",

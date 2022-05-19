@@ -1,8 +1,4 @@
 <ion-content>
-  <!-- List Refresher -->
-  <ion-refresher (ionRefresh)="getReservations($event)" slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200">
-    <ion-refresher-content></ion-refresher-content>
-  </ion-refresher>
 
   <ion-grid class="reservation-list">
     <ion-row>
@@ -42,193 +38,188 @@
             <mat-datepicker-toggle matSuffix [for]="campaignOnePicker"></mat-datepicker-toggle>
             <mat-date-range-picker #campaignOnePicker></mat-date-range-picker>
           </mat-form-field>
+          <ion-button size="small" (click)="getReservation()">Pretraga</ion-button>
         </div>
       </ion-col>
 
-      <ion-col size-md="8" offset-md="2">
+      <ion-col size-md="10" offset-md="1">
         <mat-tab-nav-panel #tabPanel>
-          <div class="mat-table-container mat-elevation-z8" *ngIf="reservationForm">
-            <div [formGroup]="reservationForm">
-              <table mat-table [dataSource]="[1]">
-
-                <ng-container matColumnDef="reservationOnName">
-                  <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
-                  <td mat-cell *matCellDef="let element">
-                    <mat-form-field appearance="legacy" class="width-130">
-                      <mat-label>Ime i Prezime</mat-label>
-                      <input type="text" formControlName="reservationOnName" matInput placeholder="Ime i prezime" />
-                    </mat-form-field>
+          <div class="mat-table-container mat-elevation-z8" *ngIf="tickets && ticketsForm">
+            <table
+              mat-table
+              #matTable
+              [dataSource]="tickets">
+              <div [formGroup]="ticketsForm">
+                <ng-container matColumnDef="position">
+                  <th mat-header-cell *matHeaderCellDef>{{ 'No.' }}</th>
+                  <td mat-cell *matCellDef="let element">{{ element.position }}
+                    <span class="ticket-type-label" *ngIf="element.ticketType === 'internet'">Internet</span>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="busLineData">
-                  <th mat-header-cell *matHeaderCellDef>Relacija</th>
-                  <td mat-cell *matCellDef="let element">
-                    <mat-form-field class="width-130" appearance="legacy">
-                      <mat-label>Linija</mat-label>
-                      <input
-                        type="text"
-                        placeholder="Izaberi liniju"
-                        matInput
-                        formControlName="ticketBusLineId"
-                        [matAutocomplete]="auto"
-                      />
-                      <mat-autocomplete [displayWith]="displayFnDe" autoActiveFirstOption #auto="matAutocomplete">
-                        <mat-option class="autocomplete-option" *ngFor="let busline of filteredBuslines | async" [value]="busline._id">
-                          {{ busline.lineCityStart }} - {{ busline.lineCityEnd }}
-                        </mat-option>
-                      </mat-autocomplete>
-                    </mat-form-field>
-                  </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="reservationPhone">
-                  <th mat-header-cell *matHeaderCellDef>Kontakt Broj</th>
-                  <td mat-cell *matCellDef="let element">
+                  <td mat-footer-cell *matFooterCellDef>
                     <mat-form-field appearance="legacy" class="width-80">
-                      <mat-label>Kontakt Broj</mat-label>
-                      <input type="text" formControlName="reservationPhone" matInput />
+                      <mat-label>Vrsta Karte</mat-label>
+                      <select formControlName="ticketType" matNativeControl>
+                        <option value="internet">Internet</option>
+                      </select>
                     </mat-form-field>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <ng-container matColumnDef="reservationDate">
+                <ng-container matColumnDef="ticketIdToShow">
+                  <th mat-header-cell *matHeaderCellDef>Broj Karte</th>
+                  <td mat-cell *matCellDef="let element">{{ element.ticketId }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
+
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="ticketStartDate">
                   <th mat-header-cell *matHeaderCellDef>Datum</th>
-                  <td mat-cell *matCellDef="let element">
+                  <td mat-cell *matCellDef="let element">{{ element.ticketStartDate | date: 'dd/MM/YYYY' }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
                     <mat-form-field appearance="legacy" class="width-80">
                       <mat-label>Datum</mat-label>
-                      <input matInput [matDatepicker]="picker1" formControlName="reservationDate" />
+                      <input matInput [matDatepicker]="picker1" formControlName="ticketStartDate">
                       <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
                       <mat-datepicker #picker1></mat-datepicker>
                     </mat-form-field>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <ng-container matColumnDef="reservationTime">
+                <ng-container matColumnDef="ticketStartTime">
                   <th mat-header-cell *matHeaderCellDef>Vrijeme</th>
-                  <td mat-cell *matCellDef="let element">
+                  <td mat-cell *matCellDef="let element">{{ element.ticketStartTime | date: 'HH:mm' }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
                     <button (click)="openDateModal('time')" class="btn btn-small standard-button">
-                      {{
-                        reservationForm.controls.reservationTime.value
-                          ? (reservationForm.controls.reservationTime.value | date: 'HH:mm')
-                          : 'Vrijeme'
-                      }}
+                      {{ticketsForm.controls.ticketStartTime.value ?
+                      (ticketsForm.controls.ticketStartTime.value | date: "HH:mm") : 'Vrijeme'  }}
                     </button>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <ng-container matColumnDef="reservationNote">
-                  <th mat-header-cell *matHeaderCellDef>Napomena</th>
-                  <td mat-cell *matCellDef="let element">
-
+                <ng-container matColumnDef="ticketOnName">
+                  <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
+                  <td mat-cell *matCellDef="let element">{{ element.ticketOnName }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
                     <mat-form-field appearance="legacy" class="width-130">
-                      <mat-label>Unesi napomenu</mat-label>
-                      <textarea matInput
-                                formControlName="reservationNote"
-                                cdkTextareaAutosize
-                                #autosize="cdkTextareaAutosize"
-                                cdkAutosizeMinRows="1"
-                                cdkAutosizeMaxRows="5"></textarea>
+                      <mat-label>Ime i Prezime</mat-label>
+                      <input type="text" formControlName="ticketOnName" matInput placeholder="Ime i prezime">
                     </mat-form-field>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <ng-container matColumnDef="action">
-                  <th mat-header-cell *matHeaderCellDef class="ion-text-right">Akcije</th>
-                  <td mat-cell *matCellDef="let element" class="ion-text-right">
-                    <button
-                      [disabled]="!reservationForm.valid"
-                      (click)="createReservation()"
-                      class="btn btn-sm btn-outline-dark standard-button">Dodaj</button>
+                <ng-container matColumnDef="ticketPhone">
+                  <th mat-header-cell *matHeaderCellDef>Telefon</th>
+                  <td mat-cell *matCellDef="let element">{{ element.ticketPhone }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <mat-form-field appearance="legacy" class="width-80">
+                      <mat-label>Telefon</mat-label>
+                      <input type="text" formControlName="ticketPhone" matInput placeholder="Br. Telefona">
+                    </mat-form-field>
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="reservationColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: reservationColumns"></tr>
-                <tr mat-footer-row *matFooterRowDef="reservationColumns"></tr>
-              </table>
-            </div>
-          </div>
-          <ng-template #noReservations>
-            <ion-col class="ion-text-center">
-              <h3>Nema rezervacija..</h3>
-            </ion-col>
-          </ng-template>
-          <div class="mat-table-container mat-elevation-z8" *ngIf="reservations.length; else noReservations">
-            <table mat-table [dataSource]="reservations">
-              <div>
-                <ng-container matColumnDef="reservationOnName">
-                  <th mat-header-cell *matHeaderCellDef>Ime Prezime</th>
-                  <td mat-cell *matCellDef="let element">{{element.reservationOnName}}</td>
-                  <td mat-footer-cell *matFooterCellDef></td>
+                <ng-container matColumnDef="ticketNote">
+                  <th mat-header-cell *matHeaderCellDef>Napomena</th>
+                  <td mat-cell *matCellDef="let element">{{ element.ticketNote }}</td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <mat-form-field appearance="legacy" class="width-130">
+                      <mat-label>Napomena</mat-label>
+                      <input type="text" formControlName="ticketNote" matInput placeholder="Napomena">
+<!--                      <textarea formControlName="ticketNote" matInput></textarea>-->
+                    </mat-form-field>
+                  </td>
+                </ng-container>
+
+                <ng-container matColumnDef="ticketRoundTrip">
+                  <th mat-header-cell *matHeaderCellDef>Vrsta Karte</th>
+                  <td mat-cell class="align-middle" *matCellDef="let element">
+                    <div class="d-flex" *ngIf="element.ticketType !== TicketTypes.return; else returnTicketIcon">
+                      <ion-icon
+                        class="ticket-type-icon"
+                        [color]="element.ticketRoundTrip ? 'primary' : 'secondary'"
+                        [name]="element.ticketRoundTrip ? 'repeat-outline' : 'return-down-forward-outline'"
+                      ></ion-icon>
+                      <span>{{ element.ticketRoundTrip ? 'Povratna' : 'Jedan Smjer' }}</span>
+                    </div>
+                    <ng-template #returnTicketIcon>
+                      <div class="d-flex">
+                        <ion-icon class="ticket-type-icon" color="danger" name="return-down-back-outline"></ion-icon>
+                        <span>Koristenje povratne</span>
+                      </div>
+                    </ng-template>
+                  </td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <mat-form-field appearance="legacy" class="width-80">
+                      <mat-label>Vrsta Karte</mat-label>
+                      <select formControlName="ticketRoundTrip" matNativeControl>
+                        <option value="false">Jedan Smijer</option>
+                        <option value="true">Povratna</option>
+
+                      </select>
+                    </mat-form-field>
+                  </td>
                 </ng-container>
 
                 <ng-container matColumnDef="busLineData">
                   <th mat-header-cell *matHeaderCellDef>Relacija</th>
-                  <td mat-cell *matCellDef="let element">{{element.busLineData.lineCityStart}} - {{element.busLineData.lineCityEnd}}</td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="reservationPhone">
-                  <th mat-header-cell *matHeaderCellDef>Kontakt Broj</th>
-                  <td mat-cell *matCellDef="let element">{{element.reservationPhone}}</td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="reservationDate">
-                  <th mat-header-cell *matHeaderCellDef>Datum</th>
-                  <td mat-cell *matCellDef="let element">{{element.reservationDate | date: "dd/MM/YYYY"}}</td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="reservationTime">
-                  <th mat-header-cell *matHeaderCellDef>Vrijeme</th>
-                  <td mat-cell *matCellDef="let element">{{element.reservationTime | date: "HH:mm"}}</td>
-                  <td mat-footer-cell *matFooterCellDef></td>
-                </ng-container>
-
-                <ng-container matColumnDef="reservationNote">
-                  <th mat-header-cell *matHeaderCellDef>Napomena</th>
                   <td mat-cell *matCellDef="let element">
-                    <mat-form-field appearance="legacy" class="width-130">
-                      <mat-label>Napomena</mat-label>
-                      <textarea matInput
-                                readonly
-                                [value]="element.reservationNote"
-                                cdkTextareaAutosize
-                                #autosize="cdkTextareaAutosize"
-                                cdkAutosizeMinRows="1"
-                                cdkAutosizeMaxRows="5"></textarea>
+                    {{ element.busLineData.lineCityStart }} - {{ element.busLineData.lineCityEnd }}
+                  </td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <mat-form-field class="width-180" appearance="legacy">
+                      <mat-label>Linija</mat-label>
+                      <input type="text"
+                             placeholder="Izaberi liniju"
+                             matInput
+                             formControlName="ticketBusLineId"
+                             [matAutocomplete]="auto">
+                      <mat-autocomplete [displayWith]="displayFnDe" autoActiveFirstOption #auto="matAutocomplete">
+                        <mat-option class="autocomplete-option" *ngFor="let busline of filteredBuslines | async"  [value]="busline._id">
+                          {{busline.lineCityStart}} - {{busline.lineCityEnd}}
+                        </mat-option>
+                      </mat-autocomplete>
                     </mat-form-field>
-<!--                    <span class="reservation-note">{{element.reservationNote}}</span>-->
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
                 </ng-container>
 
-                <ng-container matColumnDef="action">
-                  <th mat-header-cell *matHeaderCellDef class="ion-text-right">Akcije</th>
-                  <td mat-cell *matCellDef="let element" class="ion-text-right">
-                    <button
-                      (click)="deleteReservationModal(element)"
-                      class="btn btn-sm btn-outline-dark standard-button">Ukloni</button>
-                    <button
-                      (click)="convertReservationToTicket(element)"
-                      class="btn btn-sm btn-outline-dark standard-button ml-3">Napravi Kartu</button>
+                <ng-container matColumnDef="ticketPrice">
+                  <th mat-header-cell *matHeaderCellDef>Cijena</th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.ticketPrice | currency }}
                   </td>
-                  <td mat-footer-cell *matFooterCellDef></td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <mat-form-field appearance="legacy" class="width-80">
+                      <mat-label>Cijena</mat-label>
+                      <input type="number" formControlName="ticketPrice" matInput placeholder="Cijena">
+                    </mat-form-field>
+                  </td>
                 </ng-container>
 
-                <tr mat-header-row *matHeaderRowDef="reservationColumns"></tr>
-                <tr mat-row *matRowDef="let row; columns: reservationColumns"></tr>
-                <tr mat-footer-row *matFooterRowDef="reservationColumns"></tr>
+                <ng-container matColumnDef="actions">
+                  <th mat-header-cell *matHeaderCellDef>
+                    <span class="ion-float-end">Akcije</span>
+                  </th>
+                  <td mat-cell *matCellDef="let element">
+                    <div class="d-flex action-icons ion-float-end">
+                      <ion-icon size="small" name="create-outline" (click)="editTicket(element)"></ion-icon>
+                      <ion-icon size="small" name="trash" (click)="deleteTicketModal(element)"></ion-icon>
+                    </div>
+                  </td>
+                  <td mat-footer-cell *matFooterCellDef>
+                    <div class="d-flex action-icons ion-float-end">
+                      <button
+                        [disabled]="ticketsForm.invalid"
+                        (click)="createTicket(ticketsForm)"
+                        class="btn btn-outline-dark standard-button"
+                      >Dodaj</button>
+                    </div>
+                  </td>
+                </ng-container>
               </div>
+              <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+              <tr mat-footer-row *matFooterRowDef="displayedColumns"></tr>
             </table>
           </div>
         </mat-tab-nav-panel>
@@ -237,9 +228,9 @@
   </ion-grid>
 
   <!-- Floating Icon -->
-  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
-    <ion-fab-button (click)="createReservationMobile()">
-      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+<!--  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">-->
+<!--    <ion-fab-button (click)="createReservationMobile()">-->
+<!--      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>-->
+<!--    </ion-fab-button>-->
+<!--  </ion-fab>-->
 </ion-content>

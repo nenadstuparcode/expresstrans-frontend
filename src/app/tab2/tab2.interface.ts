@@ -188,4 +188,5 @@ export interface IPrintInvoiceTaxPayload {
   totalPriceBih: number;
   drivers?: string;
   showExpenses?: boolean;
+  showTax?: boolean;
 }

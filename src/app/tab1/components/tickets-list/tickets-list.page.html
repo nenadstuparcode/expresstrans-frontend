@@ -23,7 +23,7 @@
                 <div class="ticket-type-icon">
                   <ion-icon
                     size="large"
-                    [name]="ticket.ticketType === TicketTypes.classic || ticket.ticketType === TicketTypes.return ? 'cash-outline' : 'globe-outline'"
+                    [name]="ticket.ticketType !== TicketTypes.internet? 'cash-outline' : 'globe-outline'"
                   ></ion-icon>
                 </div>
 
@@ -45,9 +45,21 @@
                 </ng-template>
 
                 <ion-icon class="ticket-icon" size="large" color="primary" name="ticket-sharp"></ion-icon>
-                <ion-label class="ticket-item"
-                  ><ion-icon name="person-sharp"></ion-icon> {{ticket.ticketOnName}}</ion-label
-                >
+
+                <ion-label class="ticket-item">
+                  <div class="d-block">
+                    <span class="ticket-type-label" *ngIf="ticket.ticketType === 'classic'">Klasična</span>
+                    <span class="ticket-type-label" *ngIf="ticket.ticketType === 'return'">Povratna</span>
+                    <span class="ticket-type-label" *ngIf="ticket.ticketType === 'internet'">Internet</span>
+                    <span class="ticket-type-label" *ngIf="ticket.ticketType === 'agency'">Agencijska</span>
+                    <span class="ticket-type-label" *ngIf="ticket.ticketType === 'gratis'">Gratis</span>
+                  </div>
+                  <div class="d-block">
+                    <ion-icon name="person-sharp"></ion-icon> {{ticket.ticketOnName}}
+                  </div>
+
+                </ion-label>
+
                 <ion-label class="bus-line-title">
                   <div class="bus-line-title-item">
                     <p>{{ ticket.busLineData.lineCityStart }}</p>
@@ -110,11 +122,11 @@
     <ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Učitavanje rezultata...">
     </ion-infinite-scroll-content>
   </ion-infinite-scroll>
-  <ion-fab class="table-icon" vertical="end" horizontal="end" slot="fixed">
-    <ion-fab-button [routerLink]="'/karte/faktura'">
-      <ion-icon color="light" size="large" name="list"></ion-icon>
-    </ion-fab-button>
-  </ion-fab>
+<!--  <ion-fab class="table-icon" vertical="end" horizontal="end" slot="fixed">-->
+<!--    <ion-fab-button [routerLink]="'/karte/faktura'">-->
+<!--      <ion-icon color="light" size="large" name="list"></ion-icon>-->
+<!--    </ion-fab-button>-->
+<!--  </ion-fab>-->
 
   <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
     <ion-fab-button (click)="createTicket()">

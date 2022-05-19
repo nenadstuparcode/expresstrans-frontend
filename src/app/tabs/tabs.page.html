@@ -5,6 +5,11 @@
       <ion-label *ngIf="!isMobile()">Karte</ion-label>
     </ion-tab-button>
 
+    <ion-tab-button tab="fakture">
+      <ion-icon name="document-sharp"></ion-icon>
+      <ion-label *ngIf="!isMobile()">Fakture</ion-label>
+    </ion-tab-button>
+
     <ion-tab-button tab="rezervacije">
       <ion-icon name="document-text-outline"></ion-icon>
       <ion-label *ngIf="!isMobile()">Rezervacije</ion-label>
@@ -15,14 +20,14 @@
       <ion-label *ngIf="!isMobile()">Konfiguracija</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="korisnik">
-      <ion-icon name="person-circle-sharp"></ion-icon>
-      <ion-label *ngIf="!isMobile()">Korisnik</ion-label>
-    </ion-tab-button>
+<!--    <ion-tab-button tab="korisnik">-->
+<!--      <ion-icon name="person-circle-sharp"></ion-icon>-->
+<!--      <ion-label *ngIf="!isMobile()">Korisnik</ion-label>-->
+<!--    </ion-tab-button>-->
 
-    <ion-tab-button (click)="presentAlertConfirm()">
-      <ion-icon name="log-out-outline"></ion-icon>
-      <ion-label *ngIf="!isMobile()">Odjava</ion-label>
-    </ion-tab-button>
+<!--    <ion-tab-button (click)="presentAlertConfirm()">-->
+<!--      <ion-icon name="log-out-outline"></ion-icon>-->
+<!--      <ion-label *ngIf="!isMobile()">Odjava</ion-label>-->
+<!--    </ion-tab-button>-->
   </ion-tab-bar>
 </ion-tabs>

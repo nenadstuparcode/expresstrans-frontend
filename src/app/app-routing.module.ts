@@ -1,13 +1,11 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from '@app/services/auth-guard';
 
 const routes: Routes = [
   {
     path: '',
     // eslint-disable-next-line @typescript-eslint/typedef
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule),
-    canActivate: [AuthGuard],
   },
   {
     path: 'register',

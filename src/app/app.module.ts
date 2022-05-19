@@ -8,7 +8,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { JwtInterceptor } from '@app/services/jwt.interceptor';
 import { ErrorInterceptor } from '@app/services/error.interceptor';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 // import localeDe from '@angular/common/locales/de';
@@ -35,7 +34,6 @@ registerLocaleData(localeSr);
   ],
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: LOCALE_ID, useValue: 'sr-Latn' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },

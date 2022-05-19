@@ -273,9 +273,10 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
                 ticket.ticketType === 'return' ?
                   0 :
                   +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
-            }));
+            }))
           }),
           tap((data: ITicket[]) => {
+
             this.tickets = [...data];
             this.generalData = [];
             this.calculateInit();

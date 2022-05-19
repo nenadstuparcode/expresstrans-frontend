@@ -1,40 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { IBusLine } from '@app/tab2/tab2.interface';
 import { BusLineService } from '@app/tab2/bus-line.service';
-import { catchError, concatMap, map, startWith, take, tap } from 'rxjs/operators';
-import { Observable, throwError } from 'rxjs';
+import {catchError, concatMap, filter, map, startWith, take, tap} from 'rxjs/operators';
+import {Observable, Subject, throwError} from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DatetimeModalComponent } from '@app/tab1/components/datetime-modal/datetime-modal.component';
 import { ReservationService } from '@app/tab4/tab4.service';
 import { ICommonResponse } from '@app/services/user.interface';
 import { IReservation } from '@app/tab4/tab4.interface';
 import { AlertController, LoadingController, ModalController } from '@ionic/angular';
-import { ConvertReservationComponent } from '@app/tab4/convert-reservation/convert-reservation.component';
-import { CreateReservationComponent } from '@app/tab4/create-reservation/create-reservation.component';
+import {ICreateTicketResponse, ITicket, TicketType} from '@app/tab1/ticket.interface';
+import { TicketEditComponent } from '@app/tab1/components/ticket-edit/ticket-edit.component';
+import { TicketService } from '@app/tab1/ticket.service';
 
 @Component({
   selector: 'app-reservations',
   templateUrl: './reservations.component.html',
   styleUrls: ['./reservations.component.scss'],
 })
-export class ReservationsComponent implements OnInit {
+export class ReservationsComponent implements OnInit, OnDestroy {
+  public componentDestroyed$: Subject<void> = new Subject<void>();
   public searchBarForm: FormGroup;
   public reservationForm: FormGroup;
   public reservations: IReservation[] = [];
   public searchRangeForm: FormGroup;
-  public reservationColumns: string[] = [
-    'reservationOnName',
-    'busLineData',
-    'reservationPhone',
-    'reservationDate',
-    'reservationTime',
-    'reservationNote',
-    'action',
-  ];
-
+  public ticketsForm: FormGroup;
+  public tickets: ITicket[] = [];
   public filteredBuslines: Observable<IBusLine[]>;
-
   public campaignOne: FormGroup;
   public currentYear: number;
 
@@ -92,19 +85,39 @@ export class ReservationsComponent implements OnInit {
   public monthsToShow: any[] = [];
 
   public buslines: IBusLine[] = [];
+  public displayedColumns: string[] = [
+    'position',
+    'ticketIdToShow',
+    'ticketStartDate',
+    'ticketStartTime',
+    'ticketOnName',
+    'ticketPhone',
+    'ticketNote',
+    'ticketRoundTrip',
+    'busLineData',
+    'ticketPrice',
+    'actions',
+  ];
+
   public activeLink: number;
+
   constructor(
+    private ticketService: TicketService,
     private fb: FormBuilder,
     private buslineService: BusLineService,
     private dialog: MatDialog,
     private reservationService: ReservationService,
     private loadingController: LoadingController,
     private alertCtrl: AlertController,
-    private modalController: ModalController,
+    private modalCtrl: ModalController,
   ) {}
 
   public ngOnInit(): void {
     this.getData();
+  }
+
+  public get TicketTypes(): typeof TicketType {
+    return TicketType;
   }
 
   public generateMonths(currentMonth: number, year: number): void {
@@ -112,13 +125,13 @@ export class ReservationsComponent implements OnInit {
 
     this.months.forEach((month: any) => {
       if (month.code >= currentMonth && month.code <= 11) {
-        monthsToShow.push({...month, year: year});
+        monthsToShow.push({ ...month, year: year });
       }
     });
 
     this.months.forEach((month: any) => {
       if (month.code < currentMonth && month.code <= 11) {
-        monthsToShow.push({...month, year: year + 1})
+        monthsToShow.push({ ...month, year: year + 1 });
       }
     });
 
@@ -144,18 +157,20 @@ export class ReservationsComponent implements OnInit {
     this.campaignOne.controls.end.setValue(new Date(yearToGo, month + 1, 1).toISOString());
     this.activeLink = month;
     this.currentYear = yearToGo;
-    this.reservationForm.controls.reservationDate.setValue(new Date(yearToGo, month, 1).toISOString());
-    this.getReservations();
+    this.ticketsForm.controls.ticketStartDate.setValue(new Date(yearToGo, month, 1).toISOString());
+
+    this.getReservation();
   }
 
   public initializeRangePicker(): void {
     const today: Date = new Date();
     const month: number = today.getMonth();
     const year: number = today.getFullYear();
+    const date: number = today.getDate();
 
     this.campaignOne = new FormGroup({
-      start: new FormControl(new Date(year, month, 1).toISOString()),
-      end: new FormControl(new Date(year, month + 1, 1).toISOString()),
+      start: new FormControl(new Date(year, month, date).toISOString()),
+      end: new FormControl(new Date(year, month,date + 1 ).toISOString()),
     });
   }
 
@@ -170,46 +185,45 @@ export class ReservationsComponent implements OnInit {
               this.generateMonths(new Date().getMonth(), new Date().getFullYear());
               this.activeLink = new Date().getMonth();
               this.initializeRangePicker();
-              this.reservationForm = this.fb.group({
-                reservationOnName: this.fb.control('', Validators.required),
-                ticketBusLineId: this.fb.control('', Validators.required),
-                reservationPhone: this.fb.control(''),
-                reservationDate: this.fb.control('', Validators.required),
-                reservationTime: this.fb.control('', Validators.required),
-                reservationNote: this.fb.control(''),
-              });
+
+              this.ticketsForm = this.initiateForm();
 
               this.searchBarForm = this.fb.group({
                 searchTerm: this.fb.control(''),
               });
               this.buslines = [...data];
-              this.filteredBuslines = this.reservationForm.controls.ticketBusLineId.valueChanges.pipe(
+              this.filteredBuslines = this.ticketsForm.controls.ticketBusLineId.valueChanges.pipe(
                 startWith(''),
                 map((value: any) => (typeof value === 'string' ? value : value.lineCityStart)),
                 map((name: string) => (name ? this._filter(name) : this.buslines.slice())),
               );
             }),
             concatMap(() =>
-              this.reservationService.searchReservationsByDate({
+              this.ticketService.getTicketByType({
                 searchTerm: '',
                 pageNumber: 0,
-                resultPerPage: 50,
+                resultPerPage: 1000,
                 startDate: this.campaignOne.controls.start.value,
                 endDate: this.campaignOne.controls.end.value,
                 sortByProp: null,
                 sortOption: null,
               }),
             ),
-            map((data: ICommonResponse<IReservation[]>) => {
-              return data.data.map((res: IReservation) => {
+            map((data: ICommonResponse<ITicket[]>) => {
+              return data.data.map((res: ITicket) => {
                 return {
                   ...res,
                   busLineData: this.getBusLineData(res.ticketBusLineId),
                 };
               });
             }),
-            tap((data: IReservation[]) => {
-              this.reservations = data;
+            tap((data: ITicket[]) => {
+              this.tickets = data.map((ticket: ITicket, index: number) => {
+                return {
+                  ...ticket,
+                  position: index + 1,
+                };
+              });
               this.loadingController.dismiss();
             }),
             catchError((error: Error) => {
@@ -228,16 +242,11 @@ export class ReservationsComponent implements OnInit {
       });
   }
 
-  public async presentLoading(msg: string): Promise<void> {
-    const loading: HTMLIonLoadingElement = await this.loadingController.create({ message: msg });
-    await loading.present();
-  }
-
-  public getReservations(event?: any): void {
+  public getReservation(): void {
     this.presentLoading('Učitavanje rezervacija')
       .then(() => {
-        this.reservationService
-          .searchReservationsByDate({
+        this.ticketService
+          .getTicketByType({
             searchTerm: '',
             pageNumber: 0,
             resultPerPage: 100,
@@ -247,28 +256,25 @@ export class ReservationsComponent implements OnInit {
             sortOption: null,
           })
           .pipe(
-            map((data: ICommonResponse<IReservation[]>) => {
-              return data.data.map((res: IReservation) => {
+            map((data: ICommonResponse<ITicket[]>) => {
+              return data.data.map((res: ITicket) => {
                 return {
                   ...res,
                   busLineData: this.getBusLineData(res.ticketBusLineId),
                 };
               });
             }),
-            tap((data: IReservation[]) => {
-              this.reservations = [...data];
+            tap((data: ITicket[]) => {
+              this.tickets = data.map((ticket: ITicket, index: number) => {
+                return {
+                  ...ticket,
+                  position: index + 1,
+                };
+              });
               this.loadingController.dismiss();
-
-              if (event) {
-                event.target.complete();
-              }
             }),
             catchError((error: Error) => {
               this.loadingController.dismiss();
-
-              if (event) {
-                event.target.complete();
-              }
 
               return throwError(error);
             }),
@@ -281,6 +287,29 @@ export class ReservationsComponent implements OnInit {
 
         return throwError(error);
       });
+  }
+
+  public initiateForm(): FormGroup {
+    return this.fb.group({
+      ticketOnName: this.fb.control('', Validators.required),
+      ticketPhone: this.fb.control(''),
+      ticketEmail: this.fb.control(''),
+      ticketNote: this.fb.control(''),
+      ticketType: this.fb.control('internet', Validators.required),
+      ticketValid: this.fb.control('6', Validators.required),
+      ticketBusLineId: this.fb.control('', Validators.required),
+      ticketRoundTrip: this.fb.control(false, Validators.required),
+      ticketStartDate: this.fb.control('', Validators.required),
+      ticketStartTime: this.fb.control('', Validators.required),
+      ticketInvoiceNumber: this.fb.control(''),
+      ticketClassicId: this.fb.control(''),
+      ticketPrice: this.fb.control(0, Validators.required),
+    });
+  }
+
+  public async presentLoading(msg: string): Promise<void> {
+    const loading: HTMLIonLoadingElement = await this.loadingController.create({ message: msg });
+    await loading.present();
   }
 
   public getBusLineData(busLineId: string): IBusLine {
@@ -303,11 +332,11 @@ export class ReservationsComponent implements OnInit {
   }
 
   public setDate(date: string): void {
-    this.reservationForm.controls.reservationDate.setValue(date);
+    this.ticketsForm.controls.ticketStartDate.setValue(date);
   }
 
   public setTime(time: string): void {
-    this.reservationForm.controls.reservationTime.setValue(time);
+    this.ticketsForm.controls.ticketStartTime.setValue(time);
   }
 
   public openDateModal(type: 'date' | 'time'): void {
@@ -327,50 +356,26 @@ export class ReservationsComponent implements OnInit {
       });
   }
 
-  public async createReservationMobile(): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalController.create({
-      component: CreateReservationComponent,
+  public async editTicket(ticket: ITicket): Promise<void> {
+    const modal: HTMLIonModalElement = await this.modalCtrl.create({
+      component: TicketEditComponent,
+      componentProps: {
+        ticketData: ticket,
+      },
     });
-    modal.onDidDismiss().then((data: any) => {
-      if (data.role === 'save') {
-        this.reservationForm.reset();
-        this.reservations = [
-          { ...data.data, busLineData: this.getBusLineData(data.data.ticketBusLineId) },
-          ...this.reservations,
-        ];
-        const month: number = new Date(data.data.reservationDate).getMonth();
-        const year: number = new Date(data.data.reservationDate).getFullYear();
-        this.goToMonth(month, year);
-      }
+
+    modal.onDidDismiss().then(() => {
+      this.getReservation();
     });
 
     return await modal.present();
   }
 
-  public createReservation(): void {
-    this.reservationService
-      .createReservation(this.reservationForm.value)
-      .pipe(
-        tap((data: ICommonResponse<IReservation>) => {
-          this.reservationForm.reset();
-          this.reservations = [
-            { ...data.data, busLineData: this.getBusLineData(data.data.ticketBusLineId) },
-            ...this.reservations,
-          ];
-          const month: number = new Date(data.data.reservationDate).getMonth();
-          const year: number = new Date(data.data.reservationDate).getFullYear();
-          this.goToMonth(month, year);
-        }),
-        take(1),
-      )
-      .subscribe();
-  }
-
-  public async deleteReservationModal(reservation: IReservation): Promise<void> {
+  public async deleteTicketModal(ticket: ITicket): Promise<void> {
     const alert: HTMLIonAlertElement = await this.alertCtrl.create({
       cssClass: 'my-custom-class',
-      header: 'Obriši Rezervaciju?',
-      message: 'Da li ste sigurni da želite da obrišete rezervaciju?',
+      header: 'Obriši Kartu?',
+      message: 'Da li ste sigurni da želite da obrišete kartu?',
       buttons: [
         {
           text: 'Otkaži',
@@ -380,7 +385,7 @@ export class ReservationsComponent implements OnInit {
         {
           text: 'Obriši',
           handler: () => {
-            this.deleteReservation(reservation);
+            this.deleteTicket(ticket);
           },
         },
       ],
@@ -389,33 +394,57 @@ export class ReservationsComponent implements OnInit {
     await alert.present();
   }
 
-  public async convertReservationToTicket(reservation: IReservation): Promise<void> {
-    const modal: HTMLIonModalElement = await this.modalController.create({
-      component: ConvertReservationComponent,
-      componentProps: {
-        reservation: reservation,
-      },
-    });
-    modal.onDidDismiss().then((data: any) => {
-      if (data.role === 'save') {
-        this.reservations = this.reservations.filter((res: IReservation) => res._id !== reservation._id);
-        this.deleteReservation(reservation);
-      }
-    });
+  public createTicket(form: FormGroup): void {
+    if (form.valid) {
+      this.presentLoading('Kreiranje karte...')
+        .then(() => {
+          this.ticketService
+            .createTicket(form.value)
+            .pipe(
+              tap((res: ICommonResponse<ICreateTicketResponse>) => {
 
-    return await modal.present();
+                this.loadingController.dismiss();
+
+                const newTicket: ITicket = {
+                  ...res.data,
+                  busLineData: this.getBusLineData(res.data.ticketBusLineId),
+                  ticketIdToShow:
+                    res.data.ticketType === 'classic' ? `No.0${res.data.ticketClassicId}` : res.data.ticketId,
+                };
+
+                this.tickets = [...this.tickets, newTicket]
+
+                this.ticketsForm = this.initiateForm();
+                this.getReservation();
+              }),
+              take(1),
+              catchError((error: Error) => {
+                this.loadingController.dismiss();
+
+                return throwError(error);
+              }),
+            )
+            .subscribe();
+        })
+        .catch((error: Error) => {
+          this.loadingController.dismiss();
+
+          return throwError(error);
+        });
+    }
   }
 
-  public deleteReservation(reservation: IReservation): void {
-    this.presentLoading('Brisanje rezervacije')
+  public deleteTicket(ticket: ITicket): void {
+    this.presentLoading(`Brisanje karte na ime "${ticket.ticketOnName}" u toku...`)
       .then(() => {
-        this.reservationService
-          .deleteReservation(reservation._id)
+        this.ticketService
+          .deleteTicket(ticket._id)
           .pipe(
+            filter((data: ICommonResponse<any>) => !!data),
             tap(() => {
-              this.reservations = this.reservations.filter((res: IReservation) => res._id !== reservation._id);
+              this.tickets = [...this.tickets.filter((ticketToDelete: ITicket) => ticketToDelete._id !== ticket._id)];
+              this.getReservation();
               this.loadingController.dismiss();
-              this.getReservations();
             }),
             catchError((error: Error) => {
               this.loadingController.dismiss();
@@ -431,5 +460,10 @@ export class ReservationsComponent implements OnInit {
 
         return throwError(error);
       });
+  }
+
+  public ngOnDestroy(): void {
+    this.componentDestroyed$.next();
+    this.componentDestroyed$.complete();
   }
 }

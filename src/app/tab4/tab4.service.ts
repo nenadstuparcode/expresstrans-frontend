@@ -6,7 +6,6 @@ import { ICommonResponse } from '@app/services/user.interface';
 import { environment } from '@env/environment';
 import { filter, map, pluck } from 'rxjs/operators';
 import { IReservation, IReservationCreatePayload } from '@app/tab4/tab4.interface';
-import {ITicket} from "@app/tab1/ticket.interface";
 
 @Injectable({
   providedIn: 'root',

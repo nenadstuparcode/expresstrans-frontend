@@ -23,7 +23,7 @@ export class ConfigurationListComponent {
     {
       title: 'vozila',
       icon: 'car-outline',
-      description: 'Vozači i tablice',
+      description: 'Vozači, tablice',
       color: '#E63135',
     },
     {

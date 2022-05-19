@@ -4,6 +4,8 @@ export enum TicketType {
   classic = 'classic',
   internet = 'internet',
   return = 'return',
+  gratis = 'gratis',
+  agency = 'agency',
 }
 
 export interface ICreateTicketPayload {

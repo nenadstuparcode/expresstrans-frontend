@@ -230,10 +230,10 @@
               <ng-container matColumnDef="position">
                 <th mat-header-cell *matHeaderCellDef>{{ 'No.' }}</th>
                 <td mat-cell *matCellDef="let element">{{ element.position }}
-                  <span *ngIf="element.ticketType === 'classic'">Klasična</span>
-                  <span *ngIf="element.ticketType === 'return'">Povratna</span>
-                  <span *ngIf="element.ticketType === 'agency'">Agencijska</span>
-                  <span *ngIf="element.ticketType === 'gratis'">Gratis</span>
+                  <span class="ticket-type-label" *ngIf="element.ticketType === 'classic'">Klasična</span>
+                  <span class="ticket-type-label" *ngIf="element.ticketType === 'return'">Povratna</span>
+                  <span class="ticket-type-label" *ngIf="element.ticketType === 'agency'">Agencijska</span>
+                  <span class="ticket-type-label" *ngIf="element.ticketType === 'gratis'">Gratis</span>
                 </td>
                 <td mat-footer-cell *matFooterCellDef>
                   <mat-form-field appearance="legacy" class="width-80">
@@ -252,10 +252,10 @@
                 <th mat-header-cell *matHeaderCellDef>Broj Fakture</th>
                 <td mat-cell *matCellDef="let element">{{ currentInvoice.invoicePublicId }}</td>
                 <td mat-footer-cell *matFooterCellDef>
-                  <mat-form-field appearance="legacy" class="width-80">
-                    <mat-label>Broj Fakture</mat-label>
-                    <input readonly="true" type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">
-                  </mat-form-field>
+<!--                  <mat-form-field appearance="legacy" class="width-80">-->
+<!--                    <mat-label>Broj Fakture</mat-label>-->
+<!--                    <input readonly="true" type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">-->
+<!--                  </mat-form-field>-->
                 </td>
               </ng-container>
 

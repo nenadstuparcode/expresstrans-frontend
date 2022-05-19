@@ -17,22 +17,28 @@
 
       <ion-segment color="primary" formControlName="ticketType">
         <ion-segment-button color="primary" value="classic">
-          <ion-label>Klasična</ion-label>
+          <ion-label class="tab-label">Klasična</ion-label>
         </ion-segment-button>
         <ion-segment-button color="primary" value="internet">
-          <ion-label>Internet</ion-label>
+          <ion-label class="tab-label">Internet</ion-label>
         </ion-segment-button>
         <ion-segment-button color="primary" value="return">
-          <ion-label>Povratna</ion-label>
+          <ion-label class="tab-label">Povratna</ion-label>
+        </ion-segment-button>
+        <ion-segment-button color="primary" value="gratis">
+          <ion-label class="tab-label">Gratis</ion-label>
+        </ion-segment-button>
+        <ion-segment-button color="primary" value="agency">
+          <ion-label class="tab-label">Agencijska</ion-label>
         </ion-segment-button>
       </ion-segment>
 
-      <ion-item *ngIf="createTicketType === TicketTypes.classic || createTicketType === TicketTypes.return">
+      <ion-item *ngIf="createTicketType !== TicketTypes.internet">
         <ion-label position="stacked">Broj Kl. Karte</ion-label>
         <ion-input formControlName="ticketClassicId" placeholder="Broj kl. karte" type="text"></ion-input>
       </ion-item>
 
-      <ion-item>
+      <ion-item *ngIf="createTicketType !== TicketTypes.internet">
         <ion-label position="stacked">Br. Fakture</ion-label>
         <ion-select formControlName="ticketInvoiceNumber" okText="Potvrdi" cancelText="Odustani">
           <ion-select-option *ngFor="let invoice of invoices" [value]="invoice.invoiceNumber">
