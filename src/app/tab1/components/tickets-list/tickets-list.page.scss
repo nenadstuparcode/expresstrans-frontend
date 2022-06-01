@@ -199,3 +199,17 @@ ion-modal ion-datetime {
   color: #555;
   display: block;
 }
+
+.ticket-disabled {
+  font-size: 24px;
+  font-weight: bold;
+  color: #c44e4e;
+  border: 3px solid #c44e4e;
+  position: absolute;
+  width: 98%;
+  top: 50%;
+  transform: translateY(-50%);
+  text-align: center;
+  z-index: 99999999999999;
+  background-color: #ffffffba;
+}

@@ -22,6 +22,7 @@ export interface ICreateTicketPayload {
   ticketPrice: number;
   ticketValid: number;
   ticketInvoiceNumber: number;
+  ticketDisabled?: boolean;
 }
 
 export interface ICreateTicketResponse {
@@ -43,6 +44,7 @@ export interface ICreateTicketResponse {
   ticketPrice: number;
   createdAt: string;
   modifiedAt: string;
+  ticketDisabled?: boolean;
 }
 
 export interface ITicket {
@@ -73,4 +75,5 @@ export interface ITicket {
   ticketIdToShow?: string;
   month?: string;
   year?: string;
+  ticketDisabled?: boolean;
 }

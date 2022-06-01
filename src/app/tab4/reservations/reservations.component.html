@@ -53,7 +53,7 @@
                 <ng-container matColumnDef="position">
                   <th mat-header-cell *matHeaderCellDef>{{ 'No.' }}</th>
                   <td mat-cell *matCellDef="let element">{{ element.position }}
-                    <span class="ticket-type-label" *ngIf="element.ticketType === 'internet'">Internet</span>
+                    <span [ngClass]=" element.ticketDisabled ? 'ticket-type-label disabled-ticket' : 'ticket-type-label'" *ngIf="element.ticketType === 'internet'">{{element.ticketDisabled ? 'Stornirano' : 'Internet'}}</span>
                   </td>
                   <td mat-footer-cell *matFooterCellDef>
                     <mat-form-field appearance="legacy" class="width-80">
@@ -202,8 +202,10 @@
                   </th>
                   <td mat-cell *matCellDef="let element">
                     <div class="d-flex action-icons ion-float-end">
+
                       <ion-icon size="small" name="create-outline" (click)="editTicket(element)"></ion-icon>
                       <ion-icon size="small" name="trash" (click)="deleteTicketModal(element)"></ion-icon>
+                      <ion-icon size="small" name="close-outline" (click)="disableTicket(element)"></ion-icon>
                     </div>
                   </td>
                   <td mat-footer-cell *matFooterCellDef>

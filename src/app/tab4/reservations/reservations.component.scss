@@ -154,6 +154,10 @@ tr.mat-row, tr.mat-footer-row, tr.mat-header-row {
 .ticket-type-label {
   margin-left: 10px;
   font-size: 10px;
+  &.disabled-ticket {
+    color: #c44e4e;
+    font-weight: bold;
+  }
 }
 
 .gratis-checkbox {

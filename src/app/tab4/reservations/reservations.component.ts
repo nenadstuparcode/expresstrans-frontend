@@ -371,6 +371,27 @@ export class ReservationsComponent implements OnInit, OnDestroy {
     return await modal.present();
   }
 
+  public disableTicket(ticket: ITicket): void {
+    this.presentLoading('Storniranje karte').then(() => {
+      this.ticketService.updateTicket({ ...ticket, ticketDisabled: true}, ticket._id).pipe(
+        tap(() => {
+          this.loadingController.dismiss();
+          this.getReservation();
+        }),
+        catchError((err: Error) => {
+          this.loadingController.dismiss();
+
+          return throwError(err);
+        }),
+        take(1),
+      ).subscribe()
+    }).catch((err: Error) => {
+      this.loadingController.dismiss();
+
+      return throwError(err);
+    });
+  }
+
   public async deleteTicketModal(ticket: ITicket): Promise<void> {
     const alert: HTMLIonAlertElement = await this.alertCtrl.create({
       cssClass: 'my-custom-class',

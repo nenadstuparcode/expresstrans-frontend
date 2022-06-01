@@ -84,6 +84,7 @@ export class TicketEditComponent implements OnInit, OnDestroy {
             ticketEmail: this.fb.control(this.ticketData.ticketEmail),
             ticketNote: this.fb.control(this.ticketData.ticketNote),
             ticketValid: this.fb.control(this.ticketData.ticketValid, Validators.required),
+            ticketDisabled: this.fb.control(this.ticketData.ticketDisabled, Validators.required),
             ticketBusLineId: this.fb.control(this.ticketData.ticketBusLineId, Validators.required),
             ticketRoundTrip: this.fb.control(this.ticketData.ticketRoundTrip, Validators.required),
             ticketStartDate: this.fb.control(this.ticketData.ticketStartDate, Validators.required),

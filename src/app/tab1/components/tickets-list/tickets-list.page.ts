@@ -218,6 +218,26 @@ export class TicketsListComponent implements OnInit, OnDestroy {
     return this.busLines.find((line: IBusLine) => line._id === busLineId);
   }
 
+  public disableTicket(ticket: ITicket): void {
+    this.presentLoading('Storniranje karte').then(() => {
+      this.ticketService.updateTicket({ ...ticket, ticketDisabled: true}, ticket._id).pipe(
+        tap(() => {
+          this.loadingController.dismiss();
+          this.presentToast('Karta stornirana.');
+        }),
+        catchError((err: Error) => {
+          this.loadingController.dismiss();
+
+          return throwError(err);
+        }),
+        take(1),
+      ).subscribe()
+    }).catch((err: Error) => {
+      this.loadingController.dismiss();
+      return throwError(err);
+    });
+  }
+
   public async presentActionSheet(ticket: ITicket): Promise<void> {
     const actionSheet: HTMLIonActionSheetElement = await this.actionSheetController.create({
       header: 'Akcije',
@@ -229,6 +249,13 @@ export class TicketsListComponent implements OnInit, OnDestroy {
           icon: 'create-sharp',
           handler: () => {
             this.editTicket(ticket);
+          },
+        },
+        {
+          text: 'Storniraj',
+          icon: 'close-outline',
+          handler: () => {
+            this.disableTicket(ticket);
           },
         },
         {
