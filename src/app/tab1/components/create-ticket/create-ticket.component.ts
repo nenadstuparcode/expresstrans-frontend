@@ -95,6 +95,7 @@ export class CreateTicketComponent implements OnInit, OnDestroy {
             ticketInvoiceNumber: this.fb.control(''),
             ticketClassicId: this.fb.control(''),
             ticketPrice: this.fb.control(0, Validators.required),
+            ticketDiscount: this.fb.control(0, Validators.required),
           });
         }),
         tap(() => {

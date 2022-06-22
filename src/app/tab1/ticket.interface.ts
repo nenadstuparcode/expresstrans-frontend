@@ -20,6 +20,7 @@ export interface ICreateTicketPayload {
   ticketStartDate: string;
   ticketStartTime: string;
   ticketPrice: number;
+  ticketDiscount: number;
   ticketValid: number;
   ticketInvoiceNumber: number;
   ticketDisabled?: boolean;
@@ -42,6 +43,7 @@ export interface ICreateTicketResponse {
   ticketClassicId: string;
   ticketId: string;
   ticketPrice: number;
+  ticketDiscount: number;
   createdAt: string;
   modifiedAt: string;
   ticketDisabled?: boolean;
@@ -63,6 +65,7 @@ export interface ITicket {
   ticketClassicId: string;
   ticketId: string;
   ticketPrice: number;
+  ticketDiscount: number;
   createdAt: string;
   modifiedAt: string;
   busLineData?: IBusLine;

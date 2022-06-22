@@ -92,7 +92,7 @@
                 </ion-label>
 
                 <ion-label class="ticket-price" *ngIf="ticket.ticketType !== TicketTypes.return; else returnTicket">
-                  {{ticket.ticketPrice | currency}}
+                  {{ticket.ticketPrice | currency}} <span class="ml-2" *ngIf="ticket.ticketDiscount"> | Popust {{ ticket.ticketDiscount}} %</span>
                 </ion-label>
 
                 <ng-template #returnTicket>
