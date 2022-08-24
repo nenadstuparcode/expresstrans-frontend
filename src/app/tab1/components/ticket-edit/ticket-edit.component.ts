@@ -6,7 +6,7 @@ import { LoadingController, ModalController, PickerController, ToastController }
 import { BusLineService } from '@app/tab2/bus-line.service';
 import { DateAdapter } from '@angular/material/core';
 import { TicketService } from '@app/tab1/ticket.service';
-import { catchError, filter, map, startWith, take, takeUntil, tap } from 'rxjs/operators';
+import {catchError, concatMap, filter, map, startWith, take, takeUntil, tap} from 'rxjs/operators';
 import { IBusLine, IInvoice } from '@app/tab2/tab2.interface';
 import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { InvoiceService } from '@app/tab2/invoice.service';
@@ -64,13 +64,7 @@ export class TicketEditComponent implements OnInit, OnDestroy {
         tap((data: ICommonResponse<IInvoice[]>) => {
           this.invoices = data.data;
         }),
-        takeUntil(this.componentDestroyed$),
-      )
-      .subscribe();
-
-    this.busLineService
-      .getBusLines()
-      .pipe(
+        concatMap(() => this.busLineService.getBusLines()),
         filter((data: IBusLine[]) => !!data),
         takeUntil(this.componentDestroyed$),
         tap((data: IBusLine[]) => {
@@ -90,6 +84,8 @@ export class TicketEditComponent implements OnInit, OnDestroy {
             ticketStartDate: this.fb.control(this.ticketData.ticketStartDate, Validators.required),
             ticketStartTime: this.fb.control(this.ticketData.ticketStartTime, Validators.required),
             ticketInvoiceNumber: this.fb.control(this.ticketData.ticketInvoiceNumber ? this.ticketData.ticketInvoiceNumber.toString() : ''),
+            ticketInvoicePublicId: this.fb.control(this.invoices.find(
+              (inv: IInvoice) => inv.invoiceNumber == this.ticketData.ticketInvoiceNumber).invoicePublicId),
             ticketType: this.fb.control(this.ticketData.ticketType, Validators.required),
             ticketClassicId: this.fb.control(this.ticketData.ticketClassicId),
             ticketPrice: this.fb.control(this.ticketData.ticketPrice, Validators.required),
@@ -104,6 +100,8 @@ export class TicketEditComponent implements OnInit, OnDestroy {
           );
         }),
         catchError((error: Error) => throwError(error)),
+
+        takeUntil(this.componentDestroyed$),
       )
       .subscribe();
   }

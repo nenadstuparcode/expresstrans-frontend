@@ -77,13 +77,8 @@
 
               <ng-container matColumnDef="ticketInvoiceNumber">
                 <th mat-header-cell *matHeaderCellDef>Broj Fakture</th>
-                <td mat-cell *matCellDef="let element">{{ currentInvoice.invoicePublicId }}</td>
-                <td mat-footer-cell *matFooterCellDef>
-<!--                  <mat-form-field appearance="legacy" class="width-80">-->
-<!--                    <mat-label>Broj Fakture</mat-label>-->
-<!--                    <input readonly="true" type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">-->
-<!--                  </mat-form-field>-->
-                </td>
+                <td mat-cell *matCellDef="let element">{{ element.ticketInvoicePublicId }}</td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
 
               <ng-container matColumnDef="ticketIdToShow">
@@ -250,13 +245,8 @@
 
               <ng-container matColumnDef="ticketInvoiceNumber">
                 <th mat-header-cell *matHeaderCellDef>Broj Fakture</th>
-                <td mat-cell *matCellDef="let element">{{ currentInvoice.invoicePublicId }}</td>
-                <td mat-footer-cell *matFooterCellDef>
-<!--                  <mat-form-field appearance="legacy" class="width-80">-->
-<!--                    <mat-label>Broj Fakture</mat-label>-->
-<!--                    <input readonly="true" type="number" formControlName="ticketInvoiceNumber" matInput placeholder="broj fakture">-->
-<!--                  </mat-form-field>-->
-                </td>
+                <td mat-cell *matCellDef="let element">{{ element.ticketInvoicePublicId }}</td>
+                <td mat-footer-cell *matFooterCellDef></td>
               </ng-container>
 
               <ng-container matColumnDef="ticketIdToShow">

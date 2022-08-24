@@ -445,6 +445,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
       ticketStartDate: this.fb.control(fromBih ? this.currentInvoice.invoiceDateStart : this.currentInvoice.invoiceDateReturn, Validators.required),
       ticketStartTime: this.fb.control(this.ticketTime, Validators.required),
       ticketInvoiceNumber: this.fb.control(this.activeLink, Validators.required),
+      ticketInvoicePublicId: this.fb.control(this.currentInvoice.invoicePublicId),
       ticketClassicId: this.fb.control(''),
       ticketPrice: this.fb.control(0, Validators.required),
     });

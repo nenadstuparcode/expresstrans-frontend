@@ -32,6 +32,12 @@ export class ConfigurationListComponent {
       description: 'Izvještaj po gradovima',
       color: '#E63135',
     },
+    {
+      title: 'izvjestaj-karte',
+      icon: 'business-outline',
+      description: 'Izvještaj bez gradova',
+      color: '#E63135',
+    },
   ];
 
   constructor(private router: Router) {}

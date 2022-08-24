@@ -23,6 +23,7 @@ export interface ICreateTicketPayload {
   ticketDiscount: number;
   ticketValid: number;
   ticketInvoiceNumber: number;
+  ticketInvoicePublicId?: number;
   ticketDisabled?: boolean;
 }
 
@@ -40,6 +41,7 @@ export interface ICreateTicketResponse {
   ticketStartDate: string;
   ticketStartTime: string;
   ticketInvoiceNumber: number;
+  ticketInvoicePublicId?: number;
   ticketClassicId: string;
   ticketId: string;
   ticketPrice: number;
@@ -52,6 +54,7 @@ export interface ICreateTicketResponse {
 export interface ITicket {
   _id: string;
   ticketOnName: string;
+  ticketClassicIdToSort?: number;
   ticketPhone: string;
   ticketEmail: string;
   ticketNote: string;
@@ -62,6 +65,7 @@ export interface ITicket {
   ticketStartDate: string;
   ticketStartTime: string;
   ticketInvoiceNumber: number;
+  ticketInvoicePublicId?: number;
   ticketClassicId: string;
   ticketId: string;
   ticketPrice: number;

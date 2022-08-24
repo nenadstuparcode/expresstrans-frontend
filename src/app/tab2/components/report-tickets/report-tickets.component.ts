@@ -70,10 +70,10 @@ export interface IFinals {
 
 @Component({
   selector: 'app-reports-city',
-  templateUrl: './reports-city.component.html',
-  styleUrls: ['./reports-city.component.scss'],
+  templateUrl: './report-tickets.component.html',
+  styleUrls: ['./report-tickets.component.scss'],
 })
-export class ReportsCityComponent implements OnInit, OnDestroy {
+export class ReportsTicketsComponent implements OnInit, OnDestroy {
   @ViewChild(MatSort) sort: MatSort;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public config: any = {
@@ -84,6 +84,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   };
 
   public dataSource: MatTableDataSource<ITicket>;
+  public dataSourceSelected: MatTableDataSource<ITicket>;
 
   public tickets: ITicket[] = [];
   public busLines: IBusLine[] = [];
@@ -142,6 +143,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public dataLoaded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
   public selection: SelectionModel<ITicket> = new SelectionModel<ITicket>(true, []);
   public selected: string[] = [];
+  public selectedTickets: ITicket[] = [];
   public activeSortProperty: string = '';
   public activeSortOption: number;
   public lineOptions: ILineOptions[] = [];
@@ -209,9 +211,18 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public selectCheckbox(row: ITicket): void {
     if (!this.checkSelection(row)) {
       this.selected.push(row._id);
+      this.selectedTickets.push(row);
     } else {
       this.selected = [...this.selected.filter((id: string) => id !== row._id)];
+      this.selectedTickets = [ ...this.selectedTickets.filter((ticket: ITicket) => row._id !== ticket._id)]
     }
+
+    this.dataSourceSelected = new MatTableDataSource<ITicket>([...this.selectedTickets.map((ticket: ITicket, index: number) => {
+      return {
+        ...ticket,
+        position: index + 1,
+      };
+    })]);
   }
 
   public checkSelection(selectedTicket: ITicket): boolean {
@@ -259,9 +270,9 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
           map((data: ICommonResponse<ITicket[]>) => {
             this.ticketTotalCount = data.count;
 
-            return data.data.map((ticket: ITicket, index: number) => ({
+            return data.data.map((ticket: ITicket) => ({
               ...ticket,
-              position: index + 1,
+              ticketClassicIdToSort: parseInt(ticket.ticketClassicId),
               ticketIdToShow: ticket.ticketType === 'classic' ? `No.0${ticket.ticketClassicId}` : ticket.ticketId,
               ticketPrice: ticket.ticketType === 'return' ? 0 : ticket.ticketPrice,
               busLineData: this.getBusLineData(ticket.ticketBusLineId),
@@ -275,12 +286,21 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
                   +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
             }))
           }),
+          map((data: ITicket[]) => {
+            return data.sort( function compare(a:ITicket,b: ITicket) { return a.ticketClassicIdToSort - b.ticketClassicIdToSort }).map((ticket: ITicket, index: number) => {
+              return {
+                ...ticket,
+                position: index + 1,
+              }
+            })
+          }),
           tap((data: ITicket[]) => {
 
             this.tickets = [...data];
             this.generalData = [];
             this.calculateInit();
             this.dataSource = new MatTableDataSource([...this.tickets]);
+            this.dataSourceSelected = new MatTableDataSource([]);
             this.dataSource.sort = this.sort;
 
             if (event) {

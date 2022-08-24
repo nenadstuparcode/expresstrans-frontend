@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ICommonResponse } from '@app/services/user.interface';
 import { map } from 'rxjs/operators';
-import { ITicket } from '@app/tab1/ticket.interface';
+import {ITicket, TicketType} from '@app/tab1/ticket.interface';
 import { environment } from '@env/environment';
 import {IFinals, IGeneral, ITotals} from '@app/tab2/components/reports-city/reports-city.component';
 
@@ -22,6 +22,7 @@ export class ReportService {
     endDate: string;
     sortByProp: string;
     sortOption: number;
+    excludeTicketType?: TicketType.internet,
   }): Observable<ICommonResponse<ITicket[]>> {
     return this.http
       .post(`${environment.apiUrl}/ticket/report`, payload)

@@ -9,6 +9,7 @@ import { ReportComponent } from '@app/tab2/components/reports/report.component';
 import { InvoiceListComponent } from '@app/tab2/components/inivoice-list/invoice-list.component';
 import { DriverListComponent } from '@app/tab2/components/driver-list/driver-list.component';
 import { ReportsCityComponent } from '@app/tab2/components/reports-city/reports-city.component';
+import {ReportsTicketsComponent} from "@app/tab2/components/report-tickets/report-tickets.component";
 
 const routes: Routes = [
   {
@@ -39,6 +40,10 @@ const routes: Routes = [
       {
         path: 'izvjestaj-gradovi',
         component: ReportsCityComponent,
+      },
+      {
+        path: 'izvjestaj-karte',
+        component: ReportsTicketsComponent,
       },
       {
         path: 'fakture',
