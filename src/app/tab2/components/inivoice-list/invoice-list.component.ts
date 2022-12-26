@@ -89,7 +89,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
               this.invoices = data.data.map((invoice: IInvoice) => {
                 return {
                   ...invoice,
-                  driversArray: invoice.invoiceDrivers.map((driver: any) => driver.name).join(', '),
+                  driversArray: invoice.invoiceDrivers ? invoice.invoiceDrivers.map((driver: any) => driver.name).join(', ') : '',
                 }
               });
 
