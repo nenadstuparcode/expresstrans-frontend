@@ -30,8 +30,10 @@ import { ReportsCityComponent } from '@app/tab2/components/reports-city/reports-
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-import {ReportsTicketsComponent} from '@app/tab2/components/report-tickets/report-tickets.component';
-import {MatTabsModule} from "@angular/material/tabs";
+import { ReportsTicketsComponent } from '@app/tab2/components/report-tickets/report-tickets.component';
+import { MatTabsModule } from '@angular/material/tabs';
+import { ImportTicketsComponent } from '@app/tab2/components/import-tickets/import-tickets.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   imports: [
@@ -48,6 +50,7 @@ import {MatTabsModule} from "@angular/material/tabs";
     MatDatepickerModule,
     MatNativeDateModule,
     MatTabsModule,
+    MatDialogModule,
   ],
   exports: [
     BusLinesComponent,
@@ -65,6 +68,7 @@ import {MatTabsModule} from "@angular/material/tabs";
     UpdateInvoiceComponent,
     ReportsCityComponent,
     ReportsTicketsComponent,
+    ImportTicketsComponent,
   ],
   declarations: [
     Tab2Page,
@@ -84,6 +88,7 @@ import {MatTabsModule} from "@angular/material/tabs";
     UpdateInvoiceComponent,
     ReportsCityComponent,
     ReportsTicketsComponent,
+    ImportTicketsComponent,
   ],
   providers: [BusLineService, ReportService, DriverService, InvoiceService, MatDatepickerModule, DatePipe],
 })

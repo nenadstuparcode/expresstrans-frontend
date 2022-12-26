@@ -1,0 +1,74 @@
+<ion-header translucent>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button routerLink="/konfiguracija">Nazad</ion-button>
+    </ion-buttons>
+    <ion-title>{{ config.description }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content fullscreen>
+  <ion-refresher slot="fixed" pullFactor="0.5" pullMin="100" pullMax="200">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+  <ion-grid class="driver-container">
+    <ion-row>
+      <ion-col size-md="6" offset-md="3">
+        <ion-list [formGroup]="importForm1">
+          <ion-list-header>BIH - DE</ion-list-header>
+          <ion-item>
+            <ion-select  placeholder="Izaberi fakturu" okText="Izaberi" cancelText="Odustani" (ionChange)="selectInvoice($event, importForm1)">
+              <ion-select-option *ngFor="let invoice of invoices" [value]="invoice">{{invoice.invoicePublicId}}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-input readonly="true" placeholder="Unesi Datum" [value]="importForm1.controls.invoiceDate.value | date: 'dd.MM.YYYY'"></ion-input>
+            <ion-button slot="end" (click)="openDateModal('date', importForm1)">Datum</ion-button>
+          </ion-item>
+
+          <ion-item>
+            <h1>Uvezi xlsx datoteku: </h1>
+            <ion-input [disabled]="!importForm1.controls.invoiceId.valid || !importForm1.controls.invoiceDate.valid" slot="end" type="file" (change)="fileUpload($event, importForm1)"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-button [disabled]="!importForm1.valid" (click)="importTickets(false, importForm1)">Uvezi karte</ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+      <ion-item-divider></ion-item-divider>
+      <ion-col size-md="6" offset-md="3">
+        <ion-list-header>DE - BIH</ion-list-header>
+        <ion-list [formGroup]="importForm2">
+          <ion-item>
+            <ion-select  placeholder="Izaberi fakturu" okText="Izaberi" cancelText="Odustani" (ionChange)="selectInvoice($event, importForm2)">
+              <ion-select-option *ngFor="let invoice of invoices" [value]="invoice">{{invoice.invoicePublicId}}</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-input readonly="true" placeholder="Unesi Datum" [value]="importForm2.controls.invoiceDate.value | date: 'dd.MM.YYYY'"></ion-input>
+            <ion-button slot="end" (click)="openDateModal('date', importForm2)">Datum</ion-button>
+          </ion-item>
+
+          <ion-item>
+            <h1>Uvezi xlsx datoteku: </h1>
+            <ion-input [disabled]="!importForm2.controls.invoiceId.valid || !importForm2.controls.invoiceDate.valid" slot="end" type="file" (change)="fileUpload($event, importForm2)"></ion-input>
+          </ion-item>
+
+          <ion-item>
+            <ion-button [disabled]="!importForm2.valid" (click)="importTickets(false, importForm2)">Uvezi karte</ion-button>
+          </ion-item>
+        </ion-list>
+      </ion-col>
+      <ion-item-divider></ion-item-divider>
+
+    </ion-row>
+  </ion-grid>
+
+  <ion-fab class="add-icon" vertical="end" horizontal="end" slot="fixed">
+    <ion-fab-button (click)="createInvoice()">
+      <ion-icon color="light" size="large" name="add-sharp"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>

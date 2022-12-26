@@ -3,7 +3,6 @@ import { InvoiceService } from '@app/tab2/invoice.service';
 import {
   catchError,
   concatMap,
-  distinctUntilChanged,
   filter,
   map,
   startWith,
@@ -493,9 +492,9 @@ export class TicketTableComponent implements OnInit, OnDestroy {
                     res.data.ticketType === 'classic' ? `No.0${res.data.ticketClassicId}` : res.data.ticketId,
                 };
 
-                returnTicket
-                  ? (this.ticketsReturn = [...this.ticketsReturn, newTicket])
-                  : (this.ticketsOneWay = [...this.ticketsOneWay, newTicket]);
+                returnTicket ?
+                  (this.ticketsReturn = [...this.ticketsReturn, newTicket]) :
+                  (this.ticketsOneWay = [...this.ticketsOneWay, newTicket]);
 
                 this.oneWayForm = this.initiateForm(true);
                 this.returnForm = this.initiateForm(false);
@@ -519,15 +518,15 @@ export class TicketTableComponent implements OnInit, OnDestroy {
   }
 
   public setDate(date: string, returnTicket: boolean): void {
-    returnTicket
-      ? this.returnForm.controls.ticketStartTime.setValue(date)
-      : this.oneWayForm.controls.ticketStartTime.setValue(date);
+    returnTicket ?
+      this.returnForm.controls.ticketStartTime.setValue(date) :
+      this.oneWayForm.controls.ticketStartTime.setValue(date);
   }
 
   public setTime(time: string, returnTicket: boolean): void {
-    returnTicket
-      ? this.returnForm.controls.ticketStartTime.setValue(time)
-      : this.oneWayForm.controls.ticketStartTime.setValue(time);
+    returnTicket ?
+      this.returnForm.controls.ticketStartTime.setValue(time) :
+      this.oneWayForm.controls.ticketStartTime.setValue(time);
   }
 
   public openDateModal(type: 'date' | 'time', returnTicket: boolean): void {
@@ -802,7 +801,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
               if (this.platform.is('android') || this.platform.is('iphone')) {
                 try {
                   File.writeFile(
-                    File.documentsDirectory,
+                    File.externalRootDirectory,
                     'izvjestaj-bih.pdf',
                     new Blob([response], { type: 'application/pdf' }),
                     {
@@ -811,13 +810,14 @@ export class TicketTableComponent implements OnInit, OnDestroy {
                   ).catch((error: Error) => throwError(error));
 
                   File.writeFile(
-                    File.externalRootDirectory + '/Download',
+                    File.documentsDirectory,
                     'izvjestaj-bih.pdf',
                     new Blob([response], { type: 'application/pdf' }),
                     {
                       replace: true,
                     },
                   ).catch((error: Error) => throwError(error));
+
                 } catch (err) {
                   throwError(err);
                 }
@@ -832,7 +832,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
             }),
             tap(() => {
               this.loadingCtrl.dismiss();
-              FileOpener.open(File.externalRootDirectory + '/Downloads/' + 'izvjestaj-bih.pdf', 'application/pdf');
+              FileOpener.open(File.externalRootDirectory + 'izvjestaj-bih.pdf', 'application/pdf');
 
               this.presentToast('Štampanje završeno.');
             }),

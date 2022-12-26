@@ -9,7 +9,8 @@ import { ReportComponent } from '@app/tab2/components/reports/report.component';
 import { InvoiceListComponent } from '@app/tab2/components/inivoice-list/invoice-list.component';
 import { DriverListComponent } from '@app/tab2/components/driver-list/driver-list.component';
 import { ReportsCityComponent } from '@app/tab2/components/reports-city/reports-city.component';
-import {ReportsTicketsComponent} from "@app/tab2/components/report-tickets/report-tickets.component";
+import { ReportsTicketsComponent } from '@app/tab2/components/report-tickets/report-tickets.component';
+import { ImportTicketsComponent } from '@app/tab2/components/import-tickets/import-tickets.component';
 
 const routes: Routes = [
   {
@@ -56,6 +57,10 @@ const routes: Routes = [
       {
         path: 'linije/kreiraj',
         component: BusLineCreateComponent,
+      },
+      {
+        path: 'uvezi-karte',
+        component: ImportTicketsComponent,
       },
     ],
   },

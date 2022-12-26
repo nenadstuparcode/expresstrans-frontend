@@ -110,6 +110,14 @@ export class TicketService {
     );
   }
 
+  public importMany(payload: { invoiceDate:string, invoiceId:any, ticketsToStore: ICreateTicketPayload}): Observable<ICommonResponse<any>> {
+    return this.http.post(`${environment.apiUrl}/ticket/import`, payload).pipe(
+      map((data: ICommonResponse<any>) => {
+        return data;
+      }),
+    );
+  }
+
   public emailTicketCustom(payload: ITicket, receiverEmail: string): Observable<ICommonResponse<boolean>> {
     return this.http.post(`${environment.apiUrl}/ticket/email/${receiverEmail}`, payload).pipe(
       map((data: ICommonResponse<boolean>) => {

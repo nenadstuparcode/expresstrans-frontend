@@ -469,7 +469,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
                 ).catch((error: Error) => throwError(error));
 
                 File.writeFile(
-                  File.externalRootDirectory + '/Download',
+                  File.externalRootDirectory,
                   `izvjestaj_${monthName}_${year}.pdf`,
                   new Blob([response], { type: 'application/pdf' }),
                   {
@@ -488,7 +488,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
           }),
           tap(() => {
             this.loadingController.dismiss();
-            FileOpener.open(File.externalRootDirectory + '/Downloads/' + `izvjestaj_${monthName}_${year}.pdf`, 'application/pdf');
+            FileOpener.open(File.externalRootDirectory + `izvjestaj_${monthName}_${year}.pdf`, 'application/pdf');
           }),
           catchError((error: Error) => {
             this.loadingController.dismiss();

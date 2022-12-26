@@ -31,7 +31,6 @@ import { ICommonResponse } from '@app/services/user.interface';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { TicketEditComponent } from '@app/tab1/components/ticket-edit/ticket-edit.component';
 import { File } from '@ionic-native/file';
-import { FileOpener } from '@ionic-native/file-opener';
 import { CallNumber } from 'capacitor-call-number';
 import { CustomEmailComponent } from '@app/tab1/components/send-custom-email/custom-email.component';
 
@@ -234,6 +233,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
       ).subscribe()
     }).catch((err: Error) => {
       this.loadingController.dismiss();
+
       return throwError(err);
     });
   }
@@ -445,7 +445,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
               if (this.platform.is('android') || this.platform.is('iphone')) {
                 try {
                   File.writeFile(
-                    File.documentsDirectory,
+                    File.externalRootDirectory,
                     `${ticket.ticketOnName}_express_trans.pdf`,
                     new Blob([response], { type: 'application/pdf' }),
                     {
@@ -454,7 +454,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
                   ).catch((error: Error) => throwError(error));
 
                   File.writeFile(
-                    File.externalRootDirectory + '/Download',
+                    File.documentsDirectory,
                     `${ticket.ticketOnName}_express_trans.pdf`,
                     new Blob([response], { type: 'application/pdf' }),
                     {
@@ -475,12 +475,12 @@ export class TicketsListComponent implements OnInit, OnDestroy {
             }),
             tap(() => {
               this.loadingController.dismiss();
-              FileOpener.open(
-                File.externalRootDirectory +
-                  '/Downloads/' +
-                  'karta-express-trans.pdf',
-                'application/pdf',
-              );
+              // FileOpener.open(
+              //   File.externalRootDirectory +
+              //     '/Downloads/' +
+              //     'karta-express-trans.pdf',
+              //   'application/pdf',
+              // );
 
               this.presentToast('Štampanje završeno.');
             }),

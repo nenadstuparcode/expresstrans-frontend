@@ -38,6 +38,12 @@ export class ConfigurationListComponent {
       description: 'Izvještaj bez gradova',
       color: '#E63135',
     },
+    {
+      title: 'uvezi-karte',
+      icon: 'server-outline',
+      description: 'Uvezi karte',
+      color: '#E63135',
+    }
   ];
 
   constructor(private router: Router) {}
