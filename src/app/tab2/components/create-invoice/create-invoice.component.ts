@@ -52,6 +52,9 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
       invoiceDrivers: this.fb.array([], Validators.required),
       invoiceTotalBill: this.fb.control(0, Validators.required),
       invoicePublicId: this.fb.control(''),
+      invoiceRelations: this.fb.control([]),
+      cmr: this.fb.control([]),
+      invoiceTrailer: this.fb.control([]),
     });
 
     this.driverForm = this.fb.group({
@@ -110,7 +113,7 @@ export class CreateInvoiceComponent implements OnInit, OnDestroy {
     const add: any = this.createInvoiceForm.get('invoiceDrivers') as FormArray;
 
     if (this.driverForm.valid) {
-      add.push(this.fb.group(this.driverForm.value));
+      add.push(this.fb.control(this.driverForm.controls['name'].value));
     }
 
     this.driverForm.reset();

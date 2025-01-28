@@ -11,6 +11,7 @@ import { DriverListComponent } from '@app/tab2/components/driver-list/driver-lis
 import { ReportsCityComponent } from '@app/tab2/components/reports-city/reports-city.component';
 import { ReportsTicketsComponent } from '@app/tab2/components/report-tickets/report-tickets.component';
 import { ImportTicketsComponent } from '@app/tab2/components/import-tickets/import-tickets.component';
+import {CanDeactivateGuard} from "@app/tab2/can-deactivate.service";
 
 const routes: Routes = [
   {
@@ -45,6 +46,7 @@ const routes: Routes = [
       {
         path: 'izvjestaj-karte',
         component: ReportsTicketsComponent,
+        canDeactivate: [CanDeactivateGuard],
       },
       {
         path: 'fakture',

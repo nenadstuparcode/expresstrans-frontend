@@ -81,7 +81,7 @@
 
         <ion-list-header>Izabrani Vozači</ion-list-header>
         <ion-item lines="none" *ngFor="let driver of drivers.value; index as index">
-          <ion-label>{{ driver.name }}</ion-label>
+          <ion-label>{{ driver }}</ion-label>
           <ion-icon (click)="removeDriver(index)" color="primary" slot="end" name="close"></ion-icon>
         </ion-item>
       </ng-container>

@@ -66,11 +66,9 @@ export class ImportTicketsComponent implements OnInit {
       .subscribe();
 
     this.invoiceService
-      .searchInvoices({ searchTerm: '', searchSkip: 0, searchLimit: 40 })
+      .searchInvoices({ searchTerm: '', searchSkip: 0, searchLimit: 1000 })
       .pipe(
-        tap((data: ICommonResponse<IInvoice[]>) => {
-          this.invoices = data.data;
-        }),
+        tap((data: ICommonResponse<IInvoice[]>) => this.invoices = data.data),
         take(1),
       )
       .subscribe();
@@ -184,21 +182,34 @@ export class ImportTicketsComponent implements OnInit {
 
   public correctCityName(nameToCorrect: string): string {
     switch (nameToCorrect) {
+
+      case 'Laktasi':
+        return 'Laktaši';
+      case 'Gradiska':
+        return 'Gradiška';
+      case 'Wizberg':
+        return 'Würzburg';
+      case 'Wizburg':
+        return 'Würzburg';
       case 'Minhen':
         return 'München';
+      case 'Ninberg':
+        return 'Nürnberg';
       case 'Nirnberg':
         return 'Nürnberg';
       case 'Nurnberg':
         return 'Nürnberg';
       case 'Wurzburg':
         return 'Würzburg';
+      case 'Ingolstat':
+        return 'Ingolstadt';
       default:
         return nameToCorrect;
     }
   }
 
   public getTicketType(type: string, price: number): TicketType {
-    if (type === 'Jedan smijer' && price > 0) {
+    if (type === 'Jedan smijer' || type === 'Jedan smjer' && price > 0) {
       return TicketType.classic;
     }
 
@@ -218,14 +229,14 @@ export class ImportTicketsComponent implements OnInit {
       return TicketType.gratis;
     }
 
-    if (type !== 'Povratna' && type !== 'Jedan smijer' && type !== 'Agencijska' && type !== 'Gratis') {
+    if (type !== 'Povratna' && type !== 'Jedan smijer' && type !== 'Jedan smjer' && type !== 'Agencijska' && type !== 'Gratis') {
       return TicketType.agency;
     }
   }
 
   public checkRoundTrip(type: any): boolean {
     switch (type) {
-      case 'Jedan smijer':
+      case 'Jedan smijer' || 'Jedan smjer':
         return false;
       case 'Povratna':
         return true;

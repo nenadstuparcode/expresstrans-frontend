@@ -1,10 +1,10 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from "@angular/core";
 import { catchError, concatMap, filter, map, take, tap } from 'rxjs/operators';
 import { IBusLine } from '@app/tab2/tab2.interface';
 import { ICommonResponse } from '@app/services/user.interface';
 import { ITicket, TicketType } from '@app/tab1/ticket.interface';
 import { MatTableDataSource } from '@angular/material/table';
-import { BehaviorSubject, Subject, throwError } from 'rxjs';
+import { Observable, Subject, throwError } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { LoadingController, Platform } from '@ionic/angular';
 import { ReportService } from '@app/tab2/components/reports/report.service';
@@ -15,6 +15,9 @@ import { File } from '@ionic-native/file';
 import { FileOpener } from '@ionic-native/file-opener';
 import { saveAs } from 'file-saver';
 import { DatePipe } from '@angular/common';
+import { DialogService } from '@app/tab2/dialog.service';
+import { CanComponentDeactivate } from '@app/tab2/can-deactivate.service';
+import * as XLSX from 'xlsx';
 
 export interface ILineOptions {
   lineName: string;
@@ -72,9 +75,11 @@ export interface IFinals {
   selector: 'app-reports-city',
   templateUrl: './report-tickets.component.html',
   styleUrls: ['./report-tickets.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReportsTicketsComponent implements OnInit, OnDestroy {
+export class ReportsTicketsComponent implements OnInit, OnDestroy, CanComponentDeactivate {
   @ViewChild(MatSort) sort: MatSort;
+  @ViewChild('removedTickets') removedTicketsTable;
   public componentDestroyed$: Subject<void> = new Subject<void>();
   public config: any = {
     title: 'izvjestaj-gradovi',
@@ -84,8 +89,7 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
   };
 
   public dataSource: MatTableDataSource<ITicket>;
-  public dataSourceSelected: MatTableDataSource<ITicket>;
-
+  public selection: SelectionModel<ITicket> = new SelectionModel<ITicket>(true, []);
   public tickets: ITicket[] = [];
   public busLines: IBusLine[] = [];
   public ticketTotalCount: number = 0;
@@ -96,6 +100,7 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     'position',
     'ticketInvoiceNumber',
     'ticketId',
+    'id',
     'lineCountryStart',
     'ticketStartDate',
     'ticketOnName',
@@ -111,7 +116,6 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     'taxCalculatedTwo',
     'taxReturn',
   ];
-
   public monthNames: string[] = [
     'Januar',
     'Februar',
@@ -126,7 +130,6 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     'Novembar',
     'Decembar',
   ];
-
   public displayedColumnsTotal: string[] = [
     'passengers',
     'totalTicketPrice',
@@ -139,17 +142,10 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     'totalTaxCalculatedTwo',
     'totalTaxReturn',
   ];
-
-  public dataLoaded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(true);
-  public selection: SelectionModel<ITicket> = new SelectionModel<ITicket>(true, []);
-  public selected: string[] = [];
-  public selectedTickets: ITicket[] = [];
   public activeSortProperty: string = '';
   public activeSortOption: number;
   public lineOptions: ILineOptions[] = [];
-
   public generalData: ITableData[] = [];
-
   public general: IGeneral[] = [
     {
       name: 'Doboj',
@@ -186,7 +182,13 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     public fb: FormBuilder,
     public platform: Platform,
     public datePipe: DatePipe,
+    public dialogService: DialogService,
+    public cdr: ChangeDetectorRef,
   ) {}
+
+  public get selectedTickets(): ITicket[] {
+    return this.tickets.filter((ticket: ITicket) => this.selection.selected.includes(ticket));
+  }
 
   public get TicketTypes(): typeof TicketType {
     return TicketType;
@@ -198,8 +200,8 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     const year: number = today.getFullYear();
 
     this.campaignOne = new FormGroup({
-      start: new FormControl(new Date(year, month, 1).toISOString()),
-      end: new FormControl(new Date(year, month + 1, 1).toISOString()),
+      start: new FormControl(new Date(year, month - 2, 1).toISOString()),
+      end: new FormControl(new Date(year, month -1, 1).toISOString()),
     });
   }
 
@@ -208,28 +210,13 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
     this.getTickets('', 0, 2000);
   }
 
-  public selectCheckbox(row: ITicket): void {
-    if (!this.checkSelection(row)) {
-      this.selected.push(row._id);
-      this.selectedTickets.push(row);
-    } else {
-      this.selected = [...this.selected.filter((id: string) => id !== row._id)];
-      this.selectedTickets = [ ...this.selectedTickets.filter((ticket: ITicket) => row._id !== ticket._id)]
-    }
-
-    this.dataSourceSelected = new MatTableDataSource<ITicket>([...this.selectedTickets.map((ticket: ITicket, index: number) => {
-      return {
-        ...ticket,
-        position: index + 1,
-      };
-    })]);
-  }
-
   public checkSelection(selectedTicket: ITicket): boolean {
-    return this.selected.some((id: string) => id === selectedTicket._id);
+    return this.selection.isSelected(selectedTicket);
   }
 
   public getTickets(searchTerm: string, pageNumber: number, resultPerPage: number, event?: any): void {
+
+    this.selection.clear();
     const startDate: string = this.campaignOne.controls.start.value;
     const endDate: string = this.campaignOne.controls.end.value;
     const sortByProp: string = this.activeSortProperty ? this.activeSortProperty : 'ticketStartDate';
@@ -238,7 +225,6 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
       this.busLineService
         .getBusLines()
         .pipe(
-          take(1),
           filter((data: IBusLine[]) => !!data),
           tap((lines: IBusLine[]) => {
             const date: Date = new Date(this.campaignOne.controls.start.value);
@@ -284,23 +270,25 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
                 ticket.ticketType === 'return' ?
                   0 :
                   +(this.taxCalculatedOne(ticket) - this.taxCalculatedOne(ticket) / 1.19).toFixed(2),
-            }))
+            }));
           }),
           map((data: ITicket[]) => {
-            return data.sort( function compare(a:ITicket,b: ITicket) { return a.ticketClassicIdToSort - b.ticketClassicIdToSort }).map((ticket: ITicket, index: number) => {
-              return {
-                ...ticket,
-                position: index + 1,
-              }
-            })
+            return data
+              .sort(function compare(a: ITicket, b: ITicket) {
+                return a.ticketClassicIdToSort - b.ticketClassicIdToSort;
+              })
+              .map((ticket: ITicket, index: number) => {
+                return {
+                  ...ticket,
+                  position: index + 1,
+                };
+              });
           }),
           tap((data: ITicket[]) => {
-
             this.tickets = [...data];
             this.generalData = [];
             this.calculateInit();
             this.dataSource = new MatTableDataSource([...this.tickets]);
-            this.dataSourceSelected = new MatTableDataSource([]);
             this.dataSource.sort = this.sort;
 
             if (event) {
@@ -309,6 +297,7 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
 
             this.loadingController.dismiss();
           }),
+          take(1),
           catchError((err: Error) => {
             if (event) {
               event.target.complete();
@@ -426,7 +415,8 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
                 ticket.busLineData.lineCityEnd === option.lineCity2) ||
               (ticket.busLineData.lineCityStart === option.lineCity2 &&
                 ticket.busLineData.lineCityEnd === option.lineCity1),
-          ).filter((tic: ITicket) => !this.checkSelection(tic))
+          )
+          .filter((tic: ITicket) => !this.checkSelection(tic))
           .map((tick: ITicket, index: number) => ({
             ...tick,
             ticketStartDate: this.datePipe.transform(tick.ticketStartDate, 'dd/MM/YYYY'),
@@ -450,78 +440,79 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
   }
 
   public printReport(): void {
+    this.presentLoading('Printanje PDF-a...')
+      .then(() => {
+        const finals: IFinals = {
+          calc1: +(this.calculateTotalPrice(this.tickets) - this.calculateTotalTaxOne(this.tickets)).toFixed(2),
+        };
 
-    this.presentLoading('Printanje PDF-a...').then(() => {
-      const finals: IFinals = {
-        calc1: +(this.calculateTotalPrice(this.tickets) - this.calculateTotalTaxOne(this.tickets)).toFixed(2),
-      };
+        const totals: ITotals = {
+          totalPassengers: this.calculateTotalPassengers(this.tickets),
+          totalKm: this.calculateTotalKilometers(this.tickets),
+          totalKmBih: this.calculateTotalBih(this.tickets),
+          totalKmDe: this.calculateTotalDe(this.tickets),
+          totalKmTranzit: this.calculateTotalTranzit(this.tickets),
+          totalPrice: this.calculateTotalPrice(this.tickets),
+          totalTaxDe: '---',
+          totalTaxCalculatedOne: this.calculateTotalTaxOne(this.tickets),
+          totalTaxCalculatedTwo: this.calculateTotalTaxTwo(this.tickets),
+          totalTaxReturn: this.calculateTotalTax(this.tickets),
+        };
+        const date: Date = new Date(this.campaignOne.controls.start.value);
+        const monthName: string = this.monthNames[date.getMonth()].toUpperCase();
+        const year: string = date.getFullYear().toString().toUpperCase();
+        const printData: IGeneral[] = this.calculateBeforePrint();
+        this.reportService
+          .printReport([...printData], monthName, year, totals, finals)
+          .pipe(
+            take(1),
+            tap((response: ArrayBuffer) => {
+              if (this.platform.is('android') || this.platform.is('iphone')) {
+                try {
+                  File.writeFile(
+                    File.externalRootDirectory,
+                    `izvjestaj_${monthName}_${year}.pdf`,
+                    new Blob([response], { type: 'application/pdf' }),
+                    {
+                      replace: true,
+                    },
+                  ).catch((error: Error) => throwError(error));
 
-      const totals: ITotals = {
-        totalPassengers: this.calculateTotalPassengers(this.tickets),
-        totalKm: this.calculateTotalKilometers(this.tickets),
-        totalKmBih: this.calculateTotalBih(this.tickets),
-        totalKmDe: this.calculateTotalDe(this.tickets),
-        totalKmTranzit: this.calculateTotalTranzit(this.tickets),
-        totalPrice: this.calculateTotalPrice(this.tickets),
-        totalTaxDe: '---',
-        totalTaxCalculatedOne: this.calculateTotalTaxOne(this.tickets),
-        totalTaxCalculatedTwo: this.calculateTotalTaxTwo(this.tickets),
-        totalTaxReturn: this.calculateTotalTax(this.tickets),
-      };
-      const date: Date = new Date(this.campaignOne.controls.start.value);
-      const monthName: string = this.monthNames[date.getMonth()].toUpperCase();
-      const year: string = date.getFullYear().toString().toUpperCase();
-      const printData: IGeneral[] = this.calculateBeforePrint();
-      this.reportService
-        .printReport([...printData], monthName, year, totals, finals)
-        .pipe(
-          take(1),
-          tap((response: ArrayBuffer) => {
-            if (this.platform.is('android') || this.platform.is('iphone')) {
-              try {
-                File.writeFile(
-                  File.externalRootDirectory,
-                  `izvjestaj_${monthName}_${year}.pdf`,
-                  new Blob([response], { type: 'application/pdf' }),
-                  {
-                    replace: true,
-                  },
-                ).catch((error: Error) => throwError(error));
-
-                File.writeFile(
-                  File.documentsDirectory,
-                  `izvjestaj_${monthName}_${year}.pdf`,
-                  new Blob([response], { type: 'application/pdf' }),
-                  {
-                    replace: true,
-                  },
-                ).catch((error: Error) => throwError(error));
-              } catch (err) {
-                throwError(err);
+                  File.writeFile(
+                    File.documentsDirectory,
+                    `izvjestaj_${monthName}_${year}.pdf`,
+                    new Blob([response], { type: 'application/pdf' }),
+                    {
+                      replace: true,
+                    },
+                  ).catch((error: Error) => throwError(error));
+                } catch (err) {
+                  throwError(err);
+                }
+              } else {
+                const file: Blob = new Blob([response], { type: 'application/pdf' });
+                const fileURL: string = URL.createObjectURL(file);
+                window.open(fileURL);
+                saveAs(file, `izvjestaj_${monthName}_${year}.pdf`);
               }
-            } else {
-              const file: Blob = new Blob([response], { type: 'application/pdf' });
-              const fileURL: string = URL.createObjectURL(file);
-              window.open(fileURL);
-              saveAs(file, `izvjestaj_${monthName}_${year}.pdf`);
-            }
-          }),
-          tap(() => {
-            this.loadingController.dismiss();
-            FileOpener.open(File.documentsDirectory + `izvjestaj_${monthName}_${year}.pdf`, 'application/pdf');
-          }),
-          catchError((error: Error) => {
-            this.loadingController.dismiss();
+            }),
+            tap(() => {
+              this.loadingController.dismiss();
+              FileOpener.open(File.documentsDirectory + `izvjestaj_${monthName}_${year}.pdf`, 'application/pdf');
+            }),
+            catchError((error: Error) => {
+              this.loadingController.dismiss();
 
-            return throwError(error);
-          }),
-        )
-        .subscribe();
-    }).catch((error: Error) => {
-      this.loadingController.dismiss();
+              return throwError(error);
+            }),
+          )
+          .subscribe();
+      })
+      .catch((error: Error) => {
+        this.loadingController.dismiss();
 
-      return throwError(error);
-    });
+        return throwError(error);
+      });
   }
 
   public getLineTickets(option: ILineOptions): ITicket[] {
@@ -676,5 +667,55 @@ export class ReportsTicketsComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this.componentDestroyed$.next();
     this.componentDestroyed$.complete();
+  }
+
+  public canDeactivate(): Observable<boolean> | boolean {
+    return this.dialogService.confirm('Jeste li sigurni?');
+  }
+
+  public generateRemovedTickets(): void {
+    const workbook: XLSX.WorkBook = XLSX.utils.book_new();
+    const sheet1: XLSX.WorkSheet = XLSX.utils.table_to_sheet(document.getElementById('removedTable'));
+    const monthName: string = this.monthNames[new Date().getMonth()];
+    XLSX.utils.book_append_sheet(workbook, sheet1, 'otpad');
+
+    const wbout: any = XLSX.write(workbook, { bookType: 'xlsx', bookSST: true, type: 'buffer' });
+
+    /* the saveAs call downloads a file on the local machine */
+    saveAs(new Blob([wbout],{type: 'application/vnd.ms-excel'}), `otpad_${monthName}.xlsx`);
+
+  }
+
+  public fileUpload(event: any): void {
+    const selectedFile: File = event.target.files[0];
+    const fileReader: FileReader = new FileReader();
+    fileReader.readAsBinaryString(selectedFile);
+
+    fileReader.onload = (event: any) => {
+      const binaryData: any = event.target.result;
+      const workbook: any = XLSX.read(binaryData, { type: 'binary' });
+      const tickets: any = XLSX.utils.sheet_to_json(workbook.Sheets['otpad']);
+      const ticketsToRemove: any[] = tickets.filter((ticket: any) => ticket['ID'] !== undefined);
+      const ticketsIds: string[] = [...ticketsToRemove.map((ticket: number) => ticket['ID'].toString())];
+      const ticketsToSelect: ITicket[] = [...this.tickets.filter((ticket: ITicket) => {
+        return ticketsIds.includes(ticket.ticketClassicId);
+      })];
+
+      this.selection.select(...ticketsToSelect);
+      this.cdr.detectChanges();
+    };
+
+    event.target.value = '';
+  }
+
+  public onMultipleSelect(event: any): void {
+    this.selection.select(...event);
+  }
+
+  public toggleSelection(ticket: ITicket, event: any): void {
+    event.preventDefault();
+    event.stopImmediatePropagation();
+
+    this.selection.toggle(ticket);
   }
 }

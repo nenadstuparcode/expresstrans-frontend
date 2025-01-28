@@ -43,6 +43,7 @@
     "file-saver": "^2.0.5",
     "jetifier": "^2.0.0",
     "moment": "^2.29.1",
+    "ngx-drag-to-select": "^5.0.1",
     "rxjs": "~6.6.0",
     "tslib": "^2.2.0",
     "xlsx": "^0.18.5",

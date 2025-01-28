@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, OnDestroy, OnInit, TrackByFunction, ViewChild } from "@angular/core";
 import { catchError, concatMap, filter, map, take, tap } from 'rxjs/operators';
 import { IBusLine } from '@app/tab2/tab2.interface';
 import { ICommonResponse } from '@app/services/user.interface';
@@ -79,7 +79,7 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
   public config: any = {
     title: 'izvjestaj-gradovi',
     icon: 'business-outline',
-    description: 'Izvještaj po gradovima',
+    description: 'Izvještaj bez gradova',
     color: '#E63135',
   };
 
@@ -185,6 +185,10 @@ export class ReportsCityComponent implements OnInit, OnDestroy {
     public platform: Platform,
     public datePipe: DatePipe,
   ) {}
+
+  public trackByFn(index, item): TrackByFunction<any> {
+    return item.id; // Use the 'id' property as the unique identifier
+  }
 
   public get TicketTypes(): typeof TicketType {
     return TicketType;

@@ -32,7 +32,7 @@
       </ion-col>
 
       <ion-col size-xs="12" size-md="12">
-        <ng-container *ngFor="let item of general; index as i">
+        <ng-container *ngFor="let item of general; index as i; trackBy: trackByFn">
           <ng-container *ngFor="let option of item.data; index as j">
             <span *ngIf="i < 6 && option.data.length" class="option-headline-city">{{item.name}}</span>
             <ng-container *ngIf="option.data?.length">

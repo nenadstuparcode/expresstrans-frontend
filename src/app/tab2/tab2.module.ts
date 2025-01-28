@@ -34,6 +34,9 @@ import { ReportsTicketsComponent } from '@app/tab2/components/report-tickets/rep
 import { MatTabsModule } from '@angular/material/tabs';
 import { ImportTicketsComponent } from '@app/tab2/components/import-tickets/import-tickets.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import {CanDeactivateGuard} from "@app/tab2/can-deactivate.service";
+import { DragToSelectModule } from "ngx-drag-to-select";
+import { ShortcutService } from "ngx-drag-to-select/lib/shortcut.service";
 
 @NgModule({
   imports: [
@@ -51,6 +54,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatNativeDateModule,
     MatTabsModule,
     MatDialogModule,
+    DragToSelectModule.forRoot()
   ],
   exports: [
     BusLinesComponent,
@@ -90,6 +94,6 @@ import { MatDialogModule } from '@angular/material/dialog';
     ReportsTicketsComponent,
     ImportTicketsComponent,
   ],
-  providers: [BusLineService, ReportService, DriverService, InvoiceService, MatDatepickerModule, DatePipe],
+  providers: [BusLineService, ReportService, DriverService, InvoiceService, MatDatepickerModule, DatePipe, CanDeactivateGuard],
 })
 export class Tab2PageModule {}

@@ -181,7 +181,7 @@ export class TicketTableComponent implements OnInit, OnDestroy {
               this.invoices = data.data.map((inv: IInvoice) => {
                 return {
                   ...inv,
-                  driversArray: inv.invoiceDrivers ? inv.invoiceDrivers.map((driver: IDriver) => driver.name).join(',') : '',
+                  driversArray: inv.invoiceDrivers ? inv.invoiceDrivers.map((driver: IDriver) => driver?.name).join(',') : '',
                 };
               });
               this.buslines = buslines;

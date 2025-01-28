@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Observable } from 'rxjs';
 import { ICommonResponse } from '@app/services/user.interface';
 import { map } from 'rxjs/operators';
@@ -12,6 +12,8 @@ import {IFinals, IGeneral, ITotals} from '@app/tab2/components/reports-city/repo
   providedIn: 'root',
 })
 export class ReportService {
+  private API_URL: string = 'https://api.tableconvert.com/v2/convert/html-to-excel';
+  private API_KEY: string = 'YP6hnV8zOtzvTvDdirK3JVdk8UkYmeCU';
   constructor(private router: Router, private http: HttpClient) {}
 
   public reportTickets(payload: {
@@ -36,6 +38,15 @@ export class ReportService {
     };
 
     return this.http.post(`${environment.apiUrl}/ticket/report-print`, { general, month, year, totals, finals }, httpOptions).pipe(
+      map((data: ArrayBuffer) => data),
+    );
+  }
+
+  public convertTableToExcel(htmlToConvert: string): Observable<any> {
+    return this.http.post(
+      this.API_URL,
+      { data: htmlToConvert, 'output[textFormat]': true, 'output[autoWidth]': false },
+      { headers: new HttpHeaders({ 'Authorization': `Bearer ${this.API_KEY}` })}).pipe(
       map((data: ArrayBuffer) => data),
     );
   }
