@@ -1,4 +1,4 @@
 export const environment: any = {
   production: true,
-  apiUrl: 'https://app.express-trans.online/api',
+  apiUrl: 'https://app.dv-fm.de/api',
 };
