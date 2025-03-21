@@ -1,0 +1,35 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Express Trans Karte",
+  "version": "0.1.0",
+  "identifier": "com.express-trans.net",
+  "build": {
+    "frontendDist": "../www",
+    "devUrl": "http://localhost:4200",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Express Trans Karte",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "fullscreen": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/512x512.png",
+      "icons/128x128.png",
+      "icons/et.ico"
+    ]
+  }
+}
