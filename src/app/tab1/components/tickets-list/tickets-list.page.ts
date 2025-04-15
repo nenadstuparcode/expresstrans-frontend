@@ -33,6 +33,9 @@ import { TicketEditComponent } from '@app/tab1/components/ticket-edit/ticket-edi
 import { File } from '@ionic-native/file';
 import { CallNumber } from 'capacitor-call-number';
 import { CustomEmailComponent } from '@app/tab1/components/send-custom-email/custom-email.component';
+import { BaseDirectory } from '@tauri-apps/plugin-fs';
+import { save } from '@tauri-apps/plugin-dialog';
+import { invoke } from '@tauri-apps/api/core';
 
 @Component({
   selector: 'app-tickets-list',
@@ -434,14 +437,42 @@ export class TicketsListComponent implements OnInit, OnDestroy {
     await toast.present();
   }
 
-  public printTicket(ticket: ITicket): void {
+  public async saveFile(ticket: ITicket, response: ArrayBuffer): Promise<void> {
+    try {
+      if ((window as any).isTauri) {
+        const defaultPath: string = `${BaseDirectory.Desktop}${ticket.ticketOnName}_express_trans.pdf`
+        const filePath:string = await save({
+          defaultPath: defaultPath,
+          filters: [
+
+          ],
+          title: 'Izaberite folder za cuvanje karte',
+        });
+
+        if(!filePath) return;
+
+        await invoke('save_to_file', {path: filePath, content: response });
+
+      } else {
+        saveAs(new Blob([response], { type: 'application/pdf' }), `${ticket.ticketOnName}_express_trans.pdf`)
+      }
+
+    } catch (error) {
+      console.error('Error saving file:', error);
+    }
+  }
+
+  public async printTicket(ticket: ITicket): Promise<void> {
     this.presentLoading('Štampanje karte u toku...')
       .then(() => {
         this.ticketService
           .printTicket(ticket)
           .pipe(
             take(1),
-            tap((response: ArrayBuffer) => {
+            tap(async (response: ArrayBuffer) => {
+
+              await this.saveFile(ticket, response);
+
               if (this.platform.is('android') || this.platform.is('iphone')) {
                 try {
                   File.writeFile(
@@ -464,23 +495,10 @@ export class TicketsListComponent implements OnInit, OnDestroy {
                 } catch (err) {
                   throwError(err);
                 }
-              } else {
-                const file: Blob = new Blob([response], {
-                  type: 'application/pdf',
-                });
-                const fileURL: string = URL.createObjectURL(file);
-                window.open(fileURL);
-                saveAs(file, 'karta-express-trans.pdf');
               }
             }),
             tap(() => {
               this.loadingController.dismiss();
-              // FileOpener.open(
-              //   File.externalRootDirectory +
-              //     '/Downloads/' +
-              //     'karta-express-trans.pdf',
-              //   'application/pdf',
-              // );
 
               this.presentToast('Štampanje završeno.');
             }),

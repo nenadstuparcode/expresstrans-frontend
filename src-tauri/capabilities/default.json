@@ -6,6 +6,21 @@
     "main"
   ],
   "permissions": [
-    "core:default"
-  ]
+    "core:default",
+    "dialog:default",
+    "fs:default",
+    "fs:allow-write",
+    "fs:allow-write-file",
+    {
+      "identifier": "fs:scope",
+      "allow": [
+        "**/*"
+      ]
+    }
+  ],
+  "allowlist": {
+    "fs": {
+      "all": true
+    }
+  }
 }

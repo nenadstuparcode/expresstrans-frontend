@@ -13,6 +13,7 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 // import localeDe from '@angular/common/locales/de';
 import localeSr from '@angular/common/locales/sr-Latn';
 import { registerLocaleData } from '@angular/common';
+import { DbInterceptor } from '@app/services/db.interceptor';
 
 registerLocaleData(localeSr);
 
@@ -35,6 +36,7 @@ registerLocaleData(localeSr);
   providers: [
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+    { provide: HTTP_INTERCEPTORS, useClass: DbInterceptor, multi: true },
     { provide: LOCALE_ID, useValue: 'sr-Latn' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'EUR' },
     { provide: MAT_DATE_LOCALE, useValue: 'sr' },
