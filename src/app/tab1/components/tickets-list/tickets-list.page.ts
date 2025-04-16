@@ -440,7 +440,7 @@ export class TicketsListComponent implements OnInit, OnDestroy {
   public async saveFile(ticket: ITicket, response: ArrayBuffer): Promise<void> {
     try {
       if ((window as any).isTauri) {
-        const defaultPath: string = `${BaseDirectory.Desktop}${ticket.ticketOnName}_express_trans.pdf`
+        const defaultPath: string = `${BaseDirectory.Desktop}${ticket.ticketOnName}_express_trans.pdf`;
         const filePath:string = await save({
           defaultPath: defaultPath,
           filters: [

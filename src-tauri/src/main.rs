@@ -11,10 +11,8 @@ use std::path::Path;
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![save_to_file])
-        .invoke_handler(tauri::generate_handler![printers])
+        .invoke_handler(tauri::generate_handler![save_to_file, printers])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

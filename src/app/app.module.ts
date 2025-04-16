@@ -34,7 +34,7 @@ registerLocaleData(localeSr);
     MatInputModule,
   ],
   providers: [
-    { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    // { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
     { provide: HTTP_INTERCEPTORS, useClass: DbInterceptor, multi: true },
     { provide: LOCALE_ID, useValue: 'sr-Latn' },
